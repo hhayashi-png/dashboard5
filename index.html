@@ -2,762 +2,701 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>エステ事業部 進捗ダッシュボード</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>営業パフォーマンス ダッシュボード</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  /* White Clean Theme */
-  --bg: #FFFFFF;           /* 全体背景 */
-  --card: #FFFFFF;         /* カード */
-  --card-hover: #FFF7FB;   /* hover */
-  --border: #E9E9EF;       /* 枠線 */
-  --text: #1A1A1A;         /* メイン文字 */
-  --text-sub: #7A7A85;     /* サブ文字 */
-
-  --accent: #E64B8B;       /* 上品ピンク */
-  --accent-light: #FF7AB6;
-
-  --success: #00B894;
-  --warning: #F4B740;
-  --danger: #E44D61;
-
-  --blue: #6AA7FF;
-  --pink: #E64B8B;
-  --orange: #E58A5B;
-  --teal: #00B894;
+  --green-dark: #1B7A4E;
+  --green-main: #2EAD6D;
+  --green-light: #E8F5EE;
+  --green-pale: #F0FAF4;
+  --pink-soft: #FFE4EC;
+  --pink-accent: #FF8FAB;
+  --pink-text: #D4547A;
+  --blue-soft: #E3F2FD;
+  --blue-accent: #64B5F6;
+  --blue-text: #3478BE;
+  --white: #FFFFFF;
+  --gray-50: #FAFAFA;
+  --gray-100: #F5F5F5;
+  --gray-200: #EEEEEE;
+  --gray-300: #E0E0E0;
+  --gray-500: #9E9E9E;
+  --gray-700: #616161;
+  --gray-900: #212121;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.1);
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:'Noto Sans JP',sans-serif;
+  background:linear-gradient(145deg, var(--green-pale) 0%, var(--white) 40%, var(--blue-soft) 100%);
+  min-height:100vh; color:var(--gray-900);
+  -webkit-font-smoothing:antialiased;
+  max-width:480px; margin:0 auto; padding-bottom:80px;
 }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+/* Loading */
+.loading-overlay {
+  position:fixed; top:0; left:0; right:0; bottom:0;
+  background:linear-gradient(145deg, var(--green-pale) 0%, var(--white) 40%, var(--blue-soft) 100%);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  z-index:999; transition:opacity 0.4s ease;
+}
+.loading-overlay.hidden { opacity:0; pointer-events:none; }
+.loading-spinner {
+  width:48px; height:48px; border:4px solid var(--green-light);
+  border-top-color:var(--green-main); border-radius:50%;
+  animation:spin 0.8s linear infinite; margin-bottom:16px;
+}
+@keyframes spin { to{transform:rotate(360deg)} }
+.loading-text {
+  font-family:'Zen Maru Gothic',sans-serif; font-size:14px;
+  color:var(--green-dark); font-weight:500;
+}
+.loading-sub { font-size:11px; color:var(--gray-500); margin-top:6px; }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', 'Noto Sans JP', sans-serif;
-    min-height: 100vh;
-  }
+/* Error */
+.error-screen {
+  display:none; padding:40px 24px; text-align:center;
+}
+.error-screen.show { display:block; }
+.error-icon { font-size:48px; margin-bottom:12px; }
+.error-msg { font-size:14px; color:var(--gray-700); line-height:1.6; margin-bottom:16px; }
+.retry-btn {
+  padding:10px 24px; border-radius:20px; border:none;
+  background:var(--green-main); color:white; font-size:14px;
+  font-family:'Noto Sans JP',sans-serif; font-weight:600;
+  cursor:pointer; box-shadow:0 2px 8px rgba(46,173,109,0.3);
+}
 
-  /* ── Header ── */
-  .header {
-    background: linear-gradient(135deg, var(--card) 0%, var(--bg) 100%);
-    border-bottom: 1px solid var(--border);
-    padding: 24px 32px 0;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    backdrop-filter: blur(20px);
-  }
-  .header-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-  .header-title { display: flex; align-items: center; gap: 12px; }
-  .header-icon {
-    width: 40px; height: 40px; border-radius: 12px;
-    background: linear-gradient(135deg, var(--accent), var(--success));
-    display: flex; align-items: center; justify-content: center; font-size: 20px;
-  }
-  .header h1 { font-size: 22px; font-weight: 800; }
-  .header-sub { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
-  .live-badge {
-    padding: 6px 14px; border-radius: 20px;
-    background: rgba(0,206,201,0.13); border: 1px solid rgba(0,206,201,0.27);
-    font-size: 12px; color: var(--success); font-weight: 600;
-  }
-  .refresh-btn {
-    padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border);
-    background: var(--card); color: var(--text-sub); font-size: 12px;
-    cursor: pointer; font-weight: 600; margin-left: 8px; transition: all 0.2s;
-  }
-  .refresh-btn:hover { background: var(--card-hover); color: var(--text); border-color: var(--accent); }
-  .refresh-btn.loading { opacity: 0.5; pointer-events: none; }
+/* Header */
+.header {
+  background:linear-gradient(135deg, var(--green-dark) 0%, var(--green-main) 100%);
+  padding:20px 20px 24px; color:white;
+  position:sticky; top:0; z-index:100; box-shadow:var(--shadow-lg);
+}
+.header-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
+.header h1 { font-family:'Zen Maru Gothic',sans-serif; font-size:18px; font-weight:700; }
+.header .date-label { font-size:12px; opacity:0.85; }
+.header .period { font-size:11px; opacity:0.7; margin-top:2px; }
+.refresh-btn {
+  background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.3);
+  color:white; padding:4px 10px; border-radius:16px; font-size:11px;
+  cursor:pointer; font-family:'Noto Sans JP',sans-serif;
+  transition:background 0.2s;
+}
+.refresh-btn:active { background:rgba(255,255,255,0.35); }
+.refresh-btn.loading { opacity:0.6; pointer-events:none; }
 
-  /* ── Tabs ── */
-  .tabs { display: flex; gap: 4px; }
-  .tab {
-    padding: 10px 20px; border-radius: 10px 10px 0 0; border: none;
-    background: transparent; color: var(--text-sub); font-size: 13px;
-    font-weight: 500; cursor: pointer; transition: all 0.2s;
-    font-family: inherit; border-top: 2px solid transparent;
-  }
-  .tab.active {
-    background: var(--card); color: var(--text);
-    font-weight: 700; border-top-color: var(--accent);
-  }
+/* Tabs */
+.tabs {
+  display:flex; gap:6px; padding:12px 16px; background:var(--white);
+  border-bottom:1px solid var(--gray-200);
+  overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none;
+}
+.tabs::-webkit-scrollbar { display:none; }
+.tab {
+  flex-shrink:0; padding:8px 16px; border-radius:20px; font-size:13px; font-weight:500;
+  border:none; cursor:pointer; transition:all 0.25s ease;
+  background:var(--gray-100); color:var(--gray-700);
+  font-family:'Noto Sans JP',sans-serif;
+}
+.tab.active { background:var(--green-main); color:white; box-shadow:0 2px 8px rgba(46,173,109,0.3); }
 
-  /* ── Content ── */
-  .content { padding: 28px 32px; max-width: 1200px; margin: 0 auto; }
+/* Content */
+.content { padding:16px; }
+.section-title {
+  font-family:'Zen Maru Gothic',sans-serif; font-size:15px; font-weight:700;
+  color:var(--green-dark); margin:20px 0 12px; display:flex; align-items:center; gap:6px;
+}
+.section-title:first-child { margin-top:4px; }
 
-  /* ── KPI Cards ── */
-  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-bottom: 32px; }
-  .kpi-card {
-    background: linear-gradient(135deg, var(--card) 0%, var(--card-hover) 100%);
-    border: 1px solid var(--border); border-radius: 16px;
-    padding: 20px 24px; position: relative; overflow: hidden;
-  }
-  .kpi-card .bg-icon { position: absolute; top: -10px; right: -10px; font-size: 56px; opacity: 0.06; }
-  .kpi-label { font-size: 12px; color: var(--text-sub); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; font-weight: 600; }
-  .kpi-value { font-size: 28px; font-weight: 800; line-height: 1.1; }
-  .kpi-sub { font-size: 12px; color: var(--text-sub); margin-top: 6px; }
-  .kpi-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; }
+/* Summary Cards */
+.summary-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:8px; }
+.summary-card {
+  background:var(--white); border-radius:var(--radius-sm); padding:14px;
+  box-shadow:var(--shadow-sm); border:1px solid var(--gray-200);
+}
+.summary-card.green { border-left:4px solid var(--green-main); }
+.summary-card.pink { border-left:4px solid var(--pink-accent); }
+.summary-card.blue { border-left:4px solid var(--blue-accent); }
+.summary-card .label { font-size:11px; color:var(--gray-500); font-weight:500; margin-bottom:4px; }
+.summary-card .value { font-size:22px; font-weight:700; font-family:'Zen Maru Gothic',sans-serif; }
+.summary-card.green .value { color:var(--green-dark); }
+.summary-card.pink .value { color:var(--pink-text); }
+.summary-card.blue .value { color:var(--blue-text); }
+.summary-card .sub { font-size:10px; color:var(--gray-500); margin-top:2px; }
 
-  /* ── Section ── */
-  .section-title { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; margin-top: 8px; }
-  .section-title .icon { font-size: 22px; }
-  .section-title h2 { font-size: 20px; font-weight: 700; }
-  .section-title .line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); margin-left: 8px; }
+/* Staff rows */
+.ranking-list { display:flex; flex-direction:column; gap:8px; }
+.staff-row {
+  background:var(--white); border-radius:var(--radius-sm); padding:12px 14px;
+  box-shadow:var(--shadow-sm); border:1px solid var(--gray-200);
+  display:flex; align-items:center; gap:10px; cursor:pointer; transition:all 0.2s;
+}
+.staff-row:active { transform:scale(0.98); background:var(--green-pale); }
+.rank-badge {
+  width:28px; height:28px; border-radius:50%; display:flex; align-items:center;
+  justify-content:center; font-size:12px; font-weight:700; flex-shrink:0;
+}
+.rank-1 { background:linear-gradient(135deg,#FFD700,#FFA000); color:white; }
+.rank-2 { background:linear-gradient(135deg,#C0C0C0,#9E9E9E); color:white; }
+.rank-3 { background:linear-gradient(135deg,#CD7F32,#A0522D); color:white; }
+.rank-other { background:var(--gray-100); color:var(--gray-500); }
+.staff-info { flex:1; min-width:0; }
+.staff-name { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.staff-stats { display:flex; gap:8px; margin-top:3px; }
+.staff-stat { font-size:10px; color:var(--gray-500); }
+.staff-stat span { font-weight:600; }
+.staff-stat.green span { color:var(--green-main); }
+.staff-stat.pink span { color:var(--pink-text); }
+.staff-arrow { color:var(--gray-300); font-size:16px; flex-shrink:0; }
+.progress-bar { height:6px; background:var(--gray-100); border-radius:3px; overflow:hidden; margin-top:6px; }
+.progress-fill { height:100%; border-radius:3px; transition:width 0.6s ease; }
+.progress-fill.green { background:linear-gradient(90deg,var(--green-main),#4FD080); }
+.progress-fill.pink { background:linear-gradient(90deg,var(--pink-accent),#FFB6C8); }
+.progress-fill.blue { background:linear-gradient(90deg,var(--blue-accent),#90CAF9); }
 
-  /* ── Chart Container ── */
-  .chart-card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 16px; padding: 24px; margin-bottom: 24px;
-  }
-  .chart-card-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; }
-  .chart-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
+/* Modal */
+.modal-overlay {
+  position:fixed; top:0; left:0; right:0; bottom:0;
+  background:rgba(0,0,0,0.4); z-index:200; display:none;
+  align-items:flex-end; justify-content:center; backdrop-filter:blur(4px);
+}
+.modal-overlay.active { display:flex; }
+.modal {
+  background:var(--white); width:100%; max-width:480px; max-height:88vh;
+  border-radius:20px 20px 0 0; overflow-y:auto; animation:slideUp 0.35s ease;
+  padding-bottom:env(safe-area-inset-bottom, 32px);
+}
+@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.modal-handle { width:36px; height:4px; background:var(--gray-300); border-radius:2px; margin:10px auto 0; }
+.modal-header {
+  padding:16px 20px 12px; border-bottom:1px solid var(--gray-200);
+  display:flex; justify-content:space-between; align-items:center;
+}
+.modal-header h2 { font-family:'Zen Maru Gothic',sans-serif; font-size:17px; font-weight:700; color:var(--green-dark); }
+.modal-close {
+  width:32px; height:32px; border-radius:50%; border:none; background:var(--gray-100);
+  font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--gray-500);
+}
+.modal-body { padding:16px 20px; }
 
-  /* ── Staff Selector ── */
-  .staff-selector { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
-  .staff-btn {
-    padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border);
-    background: var(--card); color: var(--text-sub); font-size: 12px;
-    font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit;
-  }
-  .staff-btn.active { border-color: var(--accent); background: rgba(108,92,231,0.2); color: var(--accent-light); }
-  .staff-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-  .stat-item { padding: 8px 0; border-bottom: 1px solid var(--border); }
-  .stat-label { font-size: 10px; color: var(--text-sub); margin-bottom: 2px; }
-  .stat-value { font-size: 16px; font-weight: 700; }
-  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+/* Skill bars */
+.skill-section { margin-bottom:16px; }
+.skill-bar-item { margin-bottom:10px; }
+.skill-bar-label { display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px; }
+.skill-bar-label .name { color:var(--gray-700); font-weight:500; }
+.skill-bar-label .val { font-weight:700; }
+.skill-bar { height:8px; background:var(--gray-100); border-radius:4px; overflow:hidden; }
+.skill-bar-fill { height:100%; border-radius:4px; transition:width 0.8s cubic-bezier(0.25,0.46,0.45,0.94); }
 
-  /* ── Progress Bar ── */
-  .progress-item { margin-bottom: 14px; }
-  .progress-header { display: flex; justify-content: space-between; margin-bottom: 4px; }
-  .progress-label { font-size: 12px; color: var(--text-sub); }
-  .progress-value { font-size: 12px; font-weight: 700; }
-  .progress-track { height: 8px; border-radius: 4px; background: var(--border); overflow: hidden; }
-  .progress-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+/* AI advice */
+.ai-advice {
+  background:linear-gradient(135deg, var(--green-pale) 0%, var(--pink-soft) 50%, var(--blue-soft) 100%);
+  border-radius:var(--radius-sm); padding:16px; margin-top:12px; border:1px solid var(--green-light);
+}
+.ai-advice-header {
+  display:flex; align-items:center; gap:6px; margin-bottom:8px;
+  font-size:13px; font-weight:700; color:var(--green-dark);
+}
+.ai-badge {
+  background:var(--green-main); color:white; font-size:9px; padding:2px 6px;
+  border-radius:8px; font-weight:700;
+}
+.ai-advice p { font-size:12.5px; line-height:1.7; color:var(--gray-700); }
+.ai-advice .highlight { background:rgba(46,173,109,0.15); padding:1px 4px; border-radius:3px; font-weight:600; color:var(--green-dark); }
+.ai-advice .improve { background:rgba(255,143,171,0.2); padding:1px 4px; border-radius:3px; font-weight:600; color:var(--pink-text); }
 
-  /* ── Scatter Grid ── */
-  .scatter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
-  .scatter-item {
-    background: rgba(11,15,26,0.53); border-radius: 12px; padding: 14px 12px; text-align: center;
-  }
-  .scatter-name { font-size: 11px; font-weight: 600; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .scatter-rate { font-size: 18px; font-weight: 800; }
-  .scatter-price { font-size: 11px; color: var(--text-sub); margin-top: 4px; }
-  .badge {
-    display: inline-block; padding: 2px 10px; border-radius: 20px;
-    font-size: 12px; font-weight: 700; margin-top: 4px;
-  }
-  .badge.good { background: rgba(0,206,201,0.13); color: var(--success); border: 1px solid rgba(0,206,201,0.2); }
-  .badge.bad { background: rgba(255,107,107,0.13); color: var(--danger); border: 1px solid rgba(255,107,107,0.2); }
+/* Modal stats */
+.modal-stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:16px; }
+.modal-stat { text-align:center; background:var(--gray-50); padding:10px 6px; border-radius:var(--radius-sm); }
+.modal-stat .num { font-size:18px; font-weight:700; font-family:'Zen Maru Gothic',sans-serif; }
+.modal-stat .lbl { font-size:10px; color:var(--gray-500); margin-top:2px; }
+.modal-stat.g .num { color:var(--green-dark); }
+.modal-stat.p .num { color:var(--pink-text); }
+.modal-stat.b .num { color:var(--blue-text); }
 
-  .tab-content { display: none; }
-  .tab-content.active { display: block; }
+/* Tabs */
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
 
-  /* ── Data Source Config ── */
-  .config-banner {
-    background: linear-gradient(135deg, rgba(108,92,231,0.15), rgba(0,206,201,0.1));
-    border: 1px solid rgba(108,92,231,0.3); border-radius: 12px;
-    padding: 16px 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;
-  }
-  .config-banner .icon { font-size: 24px; }
-  .config-banner .text { font-size: 13px; color: var(--text-sub); line-height: 1.5; }
-  .config-banner code { background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 12px; color: var(--accent-light); }
+/* Comparison */
+.comparison-item { margin-bottom:14px; }
+.comparison-label { display:flex; justify-content:space-between; margin-bottom:4px; }
+.comparison-name { font-size:12px; font-weight:500; color:var(--gray-700); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:55%; }
+.comparison-val { font-size:12px; font-weight:700; color:var(--green-dark); }
 
-  .footer { text-align: center; padding: 24px 32px 40px; font-size: 11px; color: rgba(136,145,165,0.53); }
+/* Select */
+.select-wrapper { position:relative; margin-bottom:16px; }
+.custom-select {
+  width:100%; padding:10px 14px; border-radius:var(--radius-sm);
+  border:2px solid var(--green-light); background:var(--white);
+  font-size:14px; font-family:'Noto Sans JP',sans-serif; font-weight:500;
+  color:var(--gray-900); appearance:none; cursor:pointer; outline:none;
+}
+.custom-select:focus { border-color:var(--green-main); }
+.select-arrow { position:absolute; right:14px; top:50%; transform:translateY(-50%); pointer-events:none; color:var(--green-main); }
 
-  @media (max-width: 768px) {
-    .chart-grid-2 { grid-template-columns: 1fr; }
-    .staff-detail-grid { grid-template-columns: 1fr; }
-    .content { padding: 16px; }
-    .header { padding: 16px 16px 0; }
-    .kpi-grid { grid-template-columns: 1fr 1fr; }
-  }
+.alert-row { border-left:4px solid var(--pink-accent) !important; }
+.no-data { text-align:center; padding:24px; color:var(--gray-500); font-size:13px; }
+.last-update { text-align:center; padding:16px; font-size:10px; color:var(--gray-500); }
+
+@keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.animate-in { animation:fadeIn 0.4s ease forwards; }
+.delay-1{animation-delay:0.05s;opacity:0} .delay-2{animation-delay:0.1s;opacity:0}
+.delay-3{animation-delay:0.15s;opacity:0} .delay-4{animation-delay:0.2s;opacity:0}
 </style>
 </head>
 <body>
 
-<!-- ══════════════ HEADER ══════════════ -->
-<div class="header">
-  <div class="header-top">
-    <div class="header-title">
-      <div class="header-icon">✦</div>
-      <div>
-        <h1>エステ事業部 進捗ダッシュボード</h1>
-        <div class="header-sub" id="periodLabel">期間: 2026/02/18 〜 2026/02/27（10日間）</div>
-      </div>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px">
-      <div class="live-badge">● LIVE</div>
-      <button class="refresh-btn" onclick="refreshData()" id="refreshBtn">🔄 データ更新</button>
-    </div>
-  </div>
-  <div class="tabs" id="tabs">
-    <button class="tab active" data-tab="overview">📊 全体概要</button>
-    <button class="tab" data-tab="new">🆕 新規契約</button>
-    <button class="tab" data-tab="onda">⚡ オンダリフト</button>
-    <button class="tab" data-tab="herb">🌿 ハーブ</button>
-    <button class="tab" data-tab="staff">👤 スタッフ詳細</button>
-  </div>
+<!-- ローディング画面 -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">🌿 データを取得中...</div>
+  <div class="loading-sub">スプレッドシートから最新情報を読み込んでいます</div>
 </div>
 
-<!-- ══════════════ CONTENT ══════════════ -->
-<div class="content">
+<!-- エラー画面 -->
+<div class="error-screen" id="errorScreen">
+  <div class="error-icon">😥</div>
+  <div class="error-msg">データの取得に失敗しました。<br>通信環境を確認して再度お試しください。</div>
+  <button class="retry-btn" onclick="loadData()">🔄 再読み込み</button>
+</div>
 
-  <!-- ── Google Sheets連携設定バナー ── -->
-  <div class="config-banner" id="configBanner">
-    <div class="icon">🔗</div>
-    <div class="text">
-      <strong style="color:var(--text)">Google Sheets API 連携設定</strong><br>
-      下記の <code>CONFIG</code> セクション（HTMLファイル内）にスプレッドシートIDとAPIキーを設定すると、リアルタイムでデータが反映されます。
-      設定方法は <a href="#" style="color:var(--accent-light)">README</a> を参照してください。
+<!-- メインコンテンツ -->
+<div id="mainApp" style="display:none;">
+
+  <div class="header">
+    <div class="header-top">
+      <h1>🌿 営業パフォーマンス</h1>
+      <button class="refresh-btn" id="refreshBtn" onclick="refreshData()">🔄 更新</button>
     </div>
+    <div class="date-label" id="todayDate"></div>
+    <div class="period" id="periodLabel">集計期間：読込中...</div>
   </div>
 
-  <!-- TAB: Overview -->
-  <div class="tab-content active" id="tab-overview">
-    <div class="kpi-grid" id="kpi-overview"></div>
-
-    <div class="section-title"><span class="icon">📈</span><h2>新規契約率 分布</h2><div class="line"></div></div>
-    <div class="chart-grid-2">
-      <div class="chart-card"><canvas id="chartDistribution"></canvas></div>
-      <div class="chart-card">
-        <div class="chart-card-title">カテゴリ別 契約率比較</div>
-        <canvas id="chartCategoryCompare"></canvas>
-      </div>
-    </div>
-
-    <div class="section-title"><span class="icon">🏆</span><h2>新規契約率 ランキング TOP10</h2><div class="line"></div></div>
-    <div class="chart-card"><canvas id="chartRanking" height="300"></canvas></div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('overview',this)">📊 全体</button>
+    <button class="tab" onclick="switchTab('ranking',this)">🏆 ランキング</button>
+    <button class="tab" onclick="switchTab('individual',this)">👤 個人分析</button>
+    <button class="tab" onclick="switchTab('alert',this)">🚨 アラート</button>
   </div>
 
-  <!-- TAB: New Contracts -->
-  <div class="tab-content" id="tab-new">
-    <div class="kpi-grid" id="kpi-new"></div>
-    <div class="section-title"><span class="icon">💰</span><h2>スタッフ別 新規契約売上</h2><div class="line"></div></div>
-    <div class="chart-card"><canvas id="chartNewSales" height="350"></canvas></div>
-    <div class="section-title"><span class="icon">🎯</span><h2>契約率 vs 契約単価</h2><div class="line"></div></div>
-    <div class="chart-card"><div class="scatter-grid" id="scatterGrid"></div></div>
-  </div>
+  <div class="content">
 
-  <!-- TAB: Onda -->
-  <div class="tab-content" id="tab-onda">
-    <div class="kpi-grid" id="kpi-onda"></div>
-    <div class="section-title"><span class="icon">📊</span><h2>スタッフ別 オンダリフト契約率</h2><div class="line"></div></div>
-    <div class="chart-card"><canvas id="chartOndaRate" height="400"></canvas></div>
-    <div class="section-title"><span class="icon">💎</span><h2>オンダリフト 契約単価分布</h2><div class="line"></div></div>
-    <div class="chart-card"><canvas id="chartOndaPrice"></canvas></div>
-  </div>
-
-  <!-- TAB: Herb -->
-  <div class="tab-content" id="tab-herb">
-    <div class="kpi-grid" id="kpi-herb"></div>
-    <div class="section-title"><span class="icon">📊</span><h2>スタッフ別 ハーブ契約率</h2><div class="line"></div></div>
-    <div class="chart-card"><canvas id="chartHerbRate" height="400"></canvas></div>
-    <div class="section-title"><span class="icon">💎</span><h2>ハーブ 売上 & 契約単価</h2><div class="line"></div></div>
-    <div class="chart-card"><canvas id="chartHerbSales"></canvas></div>
-  </div>
-
-  <!-- TAB: Staff Detail -->
-  <div class="tab-content" id="tab-staff">
-    <div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">スタッフ選択</div>
-    <div class="staff-selector" id="staffSelector"></div>
-    <div class="staff-detail-grid">
-      <div>
-        <div class="chart-card" id="staffSummary"></div>
-      </div>
-      <div>
-        <div class="chart-card">
-          <div class="chart-card-title">パフォーマンスレーダー</div>
-          <canvas id="chartRadar"></canvas>
+    <!-- 全体タブ -->
+    <div class="tab-panel active" id="tab-overview">
+      <div class="section-title animate-in">📈 全体サマリー</div>
+      <div class="summary-grid">
+        <div class="summary-card green animate-in delay-1">
+          <div class="label">新規契約率（平均）</div>
+          <div class="value" id="avgNewRate">--</div>
+          <div class="sub" id="subNewRate">基準: --%</div>
         </div>
-        <div class="chart-card" id="staffProgress"></div>
+        <div class="summary-card pink animate-in delay-2">
+          <div class="label">ハーブ新規契約率（平均）</div>
+          <div class="value" id="avgHerbRate">--</div>
+          <div class="sub" id="subHerbRate">基準: --%</div>
+        </div>
+        <div class="summary-card blue animate-in delay-3">
+          <div class="label">オンダリフト契約率（平均）</div>
+          <div class="value" id="avgOndaRate">--</div>
+          <div class="sub" id="subOndaRate">基準: --%</div>
+        </div>
+        <div class="summary-card green animate-in delay-4">
+          <div class="label">新規契約単価（平均）</div>
+          <div class="value" id="avgUnitPrice">--</div>
+          <div class="sub" id="subUnitPrice">基準: --</div>
+        </div>
       </div>
+      <div class="section-title animate-in">🌟 トップパフォーマー</div>
+      <div id="topPerformers" class="ranking-list"></div>
+      <div class="section-title animate-in" style="margin-top:24px">⚠️ サポートが必要</div>
+      <div id="needsSupport" class="ranking-list"></div>
     </div>
+
+    <!-- ランキングタブ -->
+    <div class="tab-panel" id="tab-ranking">
+      <div class="section-title">🏅 新規契約率ランキング</div>
+      <div id="rankNewRate" class="ranking-list"></div>
+      <div class="section-title" style="margin-top:20px">💰 契約単価ランキング</div>
+      <div id="rankUnitPrice" class="ranking-list"></div>
+      <div class="section-title" style="margin-top:20px">🌿 ハーブ契約売上ランキング</div>
+      <div id="rankHerbSales" class="ranking-list"></div>
+    </div>
+
+    <!-- 個人分析タブ -->
+    <div class="tab-panel" id="tab-individual">
+      <div class="section-title">👤 スタッフを選択</div>
+      <div class="select-wrapper">
+        <select class="custom-select" id="staffSelect" onchange="showIndividual()">
+          <option value="">選択してください</option>
+        </select>
+        <div class="select-arrow">▼</div>
+      </div>
+      <div id="individualContent"></div>
+    </div>
+
+    <!-- アラートタブ -->
+    <div class="tab-panel" id="tab-alert">
+      <div class="section-title">🚨 基準未達アラート</div>
+      <p style="font-size:12px;color:var(--gray-500);margin-bottom:12px;">各指標で基準値を下回っているスタッフを表示</p>
+      <div id="alertList" class="ranking-list"></div>
+    </div>
+
   </div>
 
+  <div class="last-update" id="lastUpdate">最終更新: --</div>
 </div>
 
-<div class="footer" id="footerText">
-  ※ Google Sheets API連携でリアルタイム更新可能 ・ データ取得日: 2026/02/27
+<!-- モーダル -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <h2 id="modalTitle">--</h2>
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
 </div>
 
 <script>
-// ══════════════════════════════════════════════════════════
-// CONFIG: Google Sheets API 連携設定
-// ──────────────────────────────────────────────────────────
-// ① Google Cloud Console で APIキーを取得
-// ② スプレッドシートを「リンクを知っている全員が閲覧可」に設定
-// ③ 下記の値を埋める
-// ══════════════════════════════════════════════════════════
-const CONFIG = {
-  // Apps Script の「ウェブアプリURL（/exec）」を貼る
-  WEB_APP_URL: 'https://script.google.com/macros/s/xxxxxxxxxxxxxxxx/exec',
+// ============================================================
+// GAS エンドポイント（JSON取得用）
+// ============================================================
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwtOwSrE5mRtfWswHKq9ju3ejL9fUTxj_FLuFRrBAZJmepqcWdR96gOCvXGjofx5Rhs/exec?json=1";
 
-  // GAS側に渡す範囲（今と同じ文字列でOK）
-  RANGE: 'スタッフアラート(直営)!A4:R39',
-
-  STANDARDS: {
-    newContractRate: 0.35,
-    newContractUnitPrice: 50000,
-    ondaContractRate: 0.33,
-    herbContractRate: 0.4,
-  }
-};
-
-// ══════════════════════════════════════════════════════════
-// STATIC DATA (APIが未設定の場合に使用)
-// ══════════════════════════════════════════════════════════
-const STATIC_DATA = [
-  { name:"奥田なな", newAssigned:3, newContractRate:0.67, newContractUnitPrice:78900, ondaNew:0, ondaContractRate:0, ondaContractUnitPrice:0, herbNew:3, herbContractRate:0.67, herbSales:157800, herbUnitPrice:78900 },
-  { name:"小林瑠音", newAssigned:4, newContractRate:0.75, newContractUnitPrice:73900, ondaNew:1, ondaContractRate:1.0, ondaContractUnitPrice:85200, herbNew:3, herbContractRate:0.67, herbSales:136500, herbUnitPrice:68250 },
-  { name:"家崎萌", newAssigned:7, newContractRate:0.57, newContractUnitPrice:122800, ondaNew:4, ondaContractRate:0.75, ondaContractUnitPrice:74733, herbNew:3, herbContractRate:0.33, herbSales:267000, herbUnitPrice:267000 },
-  { name:"中村瑛里華", newAssigned:6, newContractRate:0.33, newContractUnitPrice:163200, ondaNew:3, ondaContractRate:0.33, ondaContractUnitPrice:170400, herbNew:3, herbContractRate:0.33, herbSales:156000, herbUnitPrice:156000 },
-  { name:"苅宿蘭華", newAssigned:6, newContractRate:0.33, newContractUnitPrice:10000, ondaNew:5, ondaContractRate:0.20, ondaContractUnitPrice:10000, herbNew:1, herbContractRate:1.0, herbSales:10000, herbUnitPrice:10000 },
-  { name:"上野希世菜", newAssigned:6, newContractRate:0.33, newContractUnitPrice:47600, ondaNew:5, ondaContractRate:0.40, ondaContractUnitPrice:47600, herbNew:1, herbContractRate:0.0, herbSales:0, herbUnitPrice:0 },
-  { name:"小谷美風夕", newAssigned:5, newContractRate:0.60, newContractUnitPrice:105300, ondaNew:3, ondaContractRate:0.33, ondaContractUnitPrice:119700, herbNew:2, herbContractRate:1.0, herbSales:196200, herbUnitPrice:98100 },
-  { name:"豊重優衣香", newAssigned:5, newContractRate:0.60, newContractUnitPrice:87333, ondaNew:4, ondaContractRate:0.50, ondaContractUnitPrice:0, herbNew:1, herbContractRate:1.0, herbSales:262000, herbUnitPrice:262000 },
-  { name:"新井桃香", newAssigned:5, newContractRate:0.40, newContractUnitPrice:64100, ondaNew:2, ondaContractRate:0.50, ondaContractUnitPrice:14200, herbNew:3, herbContractRate:0.33, herbSales:114000, herbUnitPrice:114000 },
-  { name:"松尾陽香", newAssigned:9, newContractRate:0.44, newContractUnitPrice:54675, ondaNew:6, ondaContractRate:0.50, ondaContractUnitPrice:44900, herbNew:3, herbContractRate:0.33, herbSales:84000, herbUnitPrice:84000 },
-  { name:"田中真莉奈", newAssigned:4, newContractRate:0.25, newContractUnitPrice:164000, ondaNew:1, ondaContractRate:0, ondaContractUnitPrice:0, herbNew:3, herbContractRate:0.33, herbSales:164000, herbUnitPrice:164000 },
-  { name:"長内香帆", newAssigned:4, newContractRate:0.25, newContractUnitPrice:85200, ondaNew:3, ondaContractRate:0.33, ondaContractUnitPrice:85200, herbNew:1, herbContractRate:0.0, herbSales:0, herbUnitPrice:0 },
-  { name:"林由芽", newAssigned:6, newContractRate:0.33, newContractUnitPrice:12500, ondaNew:3, ondaContractRate:0.33, ondaContractUnitPrice:10000, herbNew:3, herbContractRate:0.33, herbSales:15000, herbUnitPrice:15000 },
-  { name:"増本結愛", newAssigned:6, newContractRate:0.33, newContractUnitPrice:79250, ondaNew:2, ondaContractRate:0.50, ondaContractUnitPrice:49500, herbNew:4, herbContractRate:0.25, herbSales:109000, herbUnitPrice:109000 },
-  { name:"大河原友里奈", newAssigned:2, newContractRate:0.50, newContractUnitPrice:49500, ondaNew:2, ondaContractRate:0.50, ondaContractUnitPrice:49500, herbNew:0, herbContractRate:0.0, herbSales:0, herbUnitPrice:0 },
-  { name:"細田瑠々花", newAssigned:3, newContractRate:0.33, newContractUnitPrice:54000, ondaNew:0, ondaContractRate:0, ondaContractUnitPrice:0, herbNew:3, herbContractRate:0.33, herbSales:54000, herbUnitPrice:54000 },
-  { name:"磯田美那", newAssigned:4, newContractRate:0.50, newContractUnitPrice:67500, ondaNew:2, ondaContractRate:1.0, ondaContractUnitPrice:67500, herbNew:2, herbContractRate:0.0, herbSales:0, herbUnitPrice:0 },
-  { name:"菅原凛奈", newAssigned:5, newContractRate:0.20, newContractUnitPrice:15000, ondaNew:3, ondaContractRate:0.33, ondaContractUnitPrice:15000, herbNew:2, herbContractRate:0.0, herbSales:0, herbUnitPrice:0 },
-  { name:"関口美優", newAssigned:4, newContractRate:0.0, newContractUnitPrice:0, ondaNew:2, ondaContractRate:0, ondaContractUnitPrice:0, herbNew:2, herbContractRate:0.0, herbSales:0, herbUnitPrice:0 },
-  { name:"菅谷明日香", newAssigned:8, newContractRate:0.13, newContractUnitPrice:49500, ondaNew:7, ondaContractRate:0.14, ondaContractUnitPrice:49500, herbNew:1, herbContractRate:0.0, herbSales:0, herbUnitPrice:0 },
-  { name:"土屋", newAssigned:5, newContractRate:0.60, newContractUnitPrice:41733, ondaNew:3, ondaContractRate:0.67, ondaContractUnitPrice:42600, herbNew:2, herbContractRate:0.50, herbSales:40000, herbUnitPrice:40000 },
-  { name:"岡本温", newAssigned:2, newContractRate:0.50, newContractUnitPrice:20000, ondaNew:0, ondaContractRate:0, ondaContractUnitPrice:0, herbNew:2, herbContractRate:0.50, herbSales:20000, herbUnitPrice:20000 },
-  { name:"関川杏菜", newAssigned:3, newContractRate:0.0, newContractUnitPrice:0, ondaNew:2, ondaContractRate:0, ondaContractUnitPrice:0, herbNew:1, herbContractRate:0.0, herbSales:0, herbUnitPrice:0 },
-  { name:"村上瑞紀", newAssigned:2, newContractRate:0.0, newContractUnitPrice:0, ondaNew:0, ondaContractRate:0, ondaContractUnitPrice:0, herbNew:2, herbContractRate:0.0, herbSales:0, herbUnitPrice:0 },
-  { name:"上ノ堀英雄", newAssigned:3, newContractRate:0.0, newContractUnitPrice:0, ondaNew:1, ondaContractRate:0, ondaContractUnitPrice:0, herbNew:2, herbContractRate:0.0, herbSales:0, herbUnitPrice:0 },
-  { name:"堀綾菜", newAssigned:3, newContractRate:0.0, newContractUnitPrice:0, ondaNew:1, ondaContractRate:0, ondaContractUnitPrice:0, herbNew:2, herbContractRate:0.0, herbSales:0, herbUnitPrice:0 },
-  { name:"石戸谷遥奈", newAssigned:1, newContractRate:0.0, newContractUnitPrice:0, ondaNew:1, ondaContractRate:0, ondaContractUnitPrice:0, herbNew:0, herbContractRate:0.0, herbSales:0, herbUnitPrice:0 },
-  { name:"脇山夕芽", newAssigned:1, newContractRate:0.0, newContractUnitPrice:0, ondaNew:0, ondaContractRate:0, ondaContractUnitPrice:0, herbNew:1, herbContractRate:0.0, herbSales:0, herbUnitPrice:0 },
-];
-
-// ══════════════════════════════════════════════════════════
-// Google Sheets API からデータ取得
-// ══════════════════════════════════════════════════════════
-async function fetchFromGoogleSheets() {
-  if (!CONFIG.WEB_APP_URL) {
-    console.log('WebアプリURL未設定 → 静的データを使用');
-    return null;
-  }
-
-  // GASへ range を渡す
-  const url = `${CONFIG.WEB_APP_URL}?range=${encodeURIComponent(CONFIG.RANGE)}`;
-
-  try {
-    const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) throw new Error(`WebApp Error: ${res.status}`);
-    const json = await res.json();
-
-    // GASが { values: [...] } を返す想定
-    return parseSheetData(json.values);
-  } catch (err) {
-    console.error('Webアプリ取得エラー:', err);
-    return null;
-  }
-}
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SPREADSHEET_ID}/values/${encodeURIComponent(CONFIG.RANGE)}?key=${CONFIG.API_KEY}`;
-
-  try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`API Error: ${res.status}`);
-    const json = await res.json();
-    return parseSheetData(json.values);
-  } catch (err) {
-    console.error('Google Sheets取得エラー:', err);
-    return null;
-  }
-}
-
-// スプレッドシートの生データをパースする
-function parseSheetData(rows) {
-  if (!rows || rows.length < 3) return null;
-
-  // 行1=ヘッダー, 行2=基準値, 行3以降=スタッフデータ
-  const parsed = [];
-  for (let i = 2; i < rows.length; i++) {
-    const r = rows[i];
-    if (!r[0] || r[0].trim() === '') continue;
-
-    const pNum = (v) => {
-      if (!v) return 0;
-      const s = String(v).replace(/[¥,%,　, ]/g, '').trim();
-      return parseFloat(s) || 0;
-    };
-    const pPct = (v) => {
-      if (!v) return 0;
-      const s = String(v).replace(/[%,　, ]/g, '').trim();
-      const n = parseFloat(s);
-      return n > 1 ? n / 100 : n || 0;
-    };
-
-    parsed.push({
-      name: r[0].replace(/^\(直\)/, ''),
-      newAssigned: pNum(r[1]),
-      newContractRate: pPct(r[2]),
-      newContractUnitPrice: pNum(r[3]),
-      ondaNew: pNum(r[4]),
-      ondaContractRate: pPct(r[5]),
-      ondaContractUnitPrice: pNum(r[6]),
-      herbNew: pNum(r[7]),
-      herbContractRate: pPct(r[8]),
-      herbSales: pNum(r[9]),
-      herbUnitPrice: pNum(r[10]),
-    });
-  }
-  return parsed.filter(d => d.newAssigned > 0);
-}
-
-// ══════════════════════════════════════════════════════════
-// STATE & HELPERS
-// ══════════════════════════════════════════════════════════
 let staffData = [];
-let charts = {};
-let selectedStaffIndex = 0;
-const STD = CONFIG.STANDARDS;
+let criteria = {};
+let activeStaff = [];
 
-const fmt = v => `¥${Math.round(v).toLocaleString()}`;
-const pct = v => `${Math.round(v * 100)}%`;
+// ============================================================
+// データ取得
+// ============================================================
+async function loadData() {
+  document.getElementById('loadingOverlay').classList.remove('hidden');
+  document.getElementById('errorScreen').classList.remove('show');
+  document.getElementById('mainApp').style.display = 'none';
 
-function derive(d) {
-  const newContracts = Math.round(d.newAssigned * d.newContractRate);
-  const newSales = newContracts * d.newContractUnitPrice;
-  const ondaContracts = Math.round(d.ondaNew * d.ondaContractRate);
-  const ondaSales = ondaContracts * d.ondaContractUnitPrice;
-  const herbContracts = Math.round(d.herbNew * d.herbContractRate);
-  return { ...d, newContracts, newSales, ondaContracts, ondaSales, herbContracts };
+  try {
+    const res = await fetch(GAS_URL);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+
+    staffData = data.staff || [];
+    criteria = data.criteria || { newRate:35, ondaRate:33, herbRate:40, unitPrice:50000 };
+    activeStaff = staffData.filter(s => s.newCount > 0 && (s.newRate > 0 || s.ondaRate > 0 || s.herbRate > 0));
+
+    // 期間表示
+    document.getElementById('periodLabel').textContent =
+      '集計期間：' + (data.period?.start || '--') + ' 〜 ' + (data.period?.end || '--');
+    document.getElementById('todayDate').textContent = new Date().toLocaleDateString('ja-JP');
+
+    // 基準値表示
+    document.getElementById('subNewRate').textContent = '基準: ' + criteria.newRate + '%';
+    document.getElementById('subHerbRate').textContent = '基準: ' + criteria.herbRate + '%';
+    document.getElementById('subOndaRate').textContent = '基準: ' + criteria.ondaRate + '%';
+    document.getElementById('subUnitPrice').textContent = '基準: ¥' + (criteria.unitPrice || 0).toLocaleString();
+
+    renderAll();
+
+    document.getElementById('mainApp').style.display = 'block';
+    document.getElementById('lastUpdate').textContent = '最終更新: ' + new Date().toLocaleString('ja-JP');
+
+  } catch (err) {
+    console.error('データ取得エラー:', err);
+    document.getElementById('errorScreen').classList.add('show');
+  } finally {
+    document.getElementById('loadingOverlay').classList.add('hidden');
+  }
 }
 
-function calcTotals(data) {
-  const t = { totalAssigned:0, totalContracts:0, totalSales:0, totalOndaNew:0, totalOndaContracts:0, totalOndaSales:0, totalHerbNew:0, totalHerbContracts:0, totalHerbSales:0 };
-  data.forEach(d => {
-    t.totalAssigned += d.newAssigned;
-    t.totalContracts += d.newContracts;
-    t.totalSales += d.newSales;
-    t.totalOndaNew += d.ondaNew;
-    t.totalOndaContracts += d.ondaContracts;
-    t.totalOndaSales += d.ondaSales;
-    t.totalHerbNew += d.herbNew;
-    t.totalHerbContracts += d.herbContracts;
-    t.totalHerbSales += d.herbSales;
-  });
-  t.avgRate = t.totalAssigned ? t.totalContracts / t.totalAssigned : 0;
-  t.avgUnit = t.totalContracts ? t.totalSales / t.totalContracts : 0;
-  t.avgOndaRate = t.totalOndaNew ? t.totalOndaContracts / t.totalOndaNew : 0;
-  t.avgHerbRate = t.totalHerbNew ? t.totalHerbContracts / t.totalHerbNew : 0;
-  t.aboveStd = data.filter(d => d.newContractRate >= STD.newContractRate).length;
-  t.staffCount = data.length;
-  return t;
-}
-
-// ══════════════════════════════════════════════════════════
-// KPI RENDERER
-// ══════════════════════════════════════════════════════════
-function kpiHTML(label, value, sub, color, icon) {
-  return `<div class="kpi-card">
-    <div class="bg-icon">${icon}</div>
-    <div class="kpi-label">${label}</div>
-    <div class="kpi-value" style="color:${color}">${value}</div>
-    ${sub ? `<div class="kpi-sub">${sub}</div>` : ''}
-    <div class="kpi-bar" style="background:linear-gradient(90deg,${color},transparent)"></div>
-  </div>`;
-}
-
-// ══════════════════════════════════════════════════════════
-// CHART CONFIG (Chart.js defaults)
-// ══════════════════════════════════════════════════════════
-Chart.defaults.color = '#8891A5';
-Chart.defaults.borderColor = '#1E2740';
-Chart.defaults.font.family = "'DM Sans','Noto Sans JP',sans-serif";
-
-function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
-
-// ══════════════════════════════════════════════════════════
-// RENDER ALL
-// ══════════════════════════════════════════════════════════
-function renderAll() {
-  const t = calcTotals(staffData);
-
-  // ── Overview KPIs ──
-  document.getElementById('kpi-overview').innerHTML = [
-    kpiHTML('新規担当数 合計', t.totalAssigned, `${t.staffCount}名のスタッフ`, '#6C5CE7', '👥'),
-    kpiHTML('新規契約数 合計', t.totalContracts, `契約率 ${pct(t.avgRate)}`, '#00CEC9', '✅'),
-    kpiHTML('新規売上 合計', fmt(t.totalSales), `平均単価 ${fmt(t.avgUnit)}`, '#74B9FF', '💰'),
-    kpiHTML('基準達成率', `${t.aboveStd}/${t.staffCount}`, `${Math.round(t.aboveStd/t.staffCount*100)}%が基準(35%)以上`, t.aboveStd > t.staffCount/2 ? '#00CEC9' : '#FDCB6E', '🎯'),
-  ].join('');
-
-  // ── Distribution Chart ──
-  const buckets = [{r:'0%',c:0,bg:'#FF6B6B'},{r:'1-25%',c:0,bg:'#E17055'},{r:'26-35%',c:0,bg:'#FDCB6E'},{r:'36-50%',c:0,bg:'#74B9FF'},{r:'51-75%',c:0,bg:'#A29BFE'},{r:'76-100%',c:0,bg:'#00CEC9'}];
-  staffData.forEach(d => {
-    const r = d.newContractRate * 100;
-    if (r===0) buckets[0].c++; else if (r<=25) buckets[1].c++; else if (r<=35) buckets[2].c++; else if (r<=50) buckets[3].c++; else if (r<=75) buckets[4].c++; else buckets[5].c++;
-  });
-  destroyChart('dist');
-  charts['dist'] = new Chart(document.getElementById('chartDistribution'), {
-    type: 'bar',
-    data: { labels: buckets.map(b=>b.r), datasets: [{ data: buckets.map(b=>b.c), backgroundColor: buckets.map(b=>b.bg), borderRadius: 6, barPercentage: 0.7 }] },
-    options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{stepSize:1}}} }
-  });
-
-  // ── Category Compare ──
-  destroyChart('catcmp');
-  charts['catcmp'] = new Chart(document.getElementById('chartCategoryCompare'), {
-    type: 'bar',
-    data: {
-      labels: ['新規全体','オンダリフト','ハーブ'],
-      datasets: [
-        { label:'実績', data:[t.avgRate*100,t.avgOndaRate*100,t.avgHerbRate*100], backgroundColor:['#6C5CE7','#74B9FF','#00B894'], borderRadius:6, barPercentage:0.5 },
-        { label:'基準', data:[STD.newContractRate*100,STD.ondaContractRate*100,STD.herbContractRate*100], backgroundColor:['rgba(108,92,231,0.25)','rgba(116,185,255,0.25)','rgba(0,184,148,0.25)'], borderRadius:6, barPercentage:0.5 }
-      ]
-    },
-    options: { responsive:true, plugins:{legend:{position:'bottom',labels:{boxWidth:12}}}, scales:{y:{beginAtZero:true,max:100,ticks:{callback:v=>v+'%'}}} }
-  });
-
-  // ── Ranking TOP10 ──
-  const ranked = [...staffData].sort((a,b)=>b.newContractRate-a.newContractRate).slice(0,10);
-  destroyChart('rank');
-  charts['rank'] = new Chart(document.getElementById('chartRanking'), {
-    type: 'bar',
-    data: {
-      labels: ranked.map(d=>d.name),
-      datasets: [{ data: ranked.map(d=>d.newContractRate*100), backgroundColor: ranked.map(d=>d.newContractRate>=STD.newContractRate?'#00CEC9':'#FDCB6E'), borderRadius:6, barPercentage:0.6 }]
-    },
-    options: { indexAxis:'y', responsive:true, plugins:{legend:{display:false}}, scales:{x:{beginAtZero:true,max:100,ticks:{callback:v=>v+'%'}}} }
-  });
-
-  // ── New Contracts Tab ──
-  document.getElementById('kpi-new').innerHTML = [
-    kpiHTML('新規担当数', t.totalAssigned, '', '#6C5CE7', '📋'),
-    kpiHTML('新規契約数', t.totalContracts, '', '#00CEC9', '📝'),
-    kpiHTML('新規契約率', pct(t.avgRate), `基準: ${pct(STD.newContractRate)}`, t.avgRate>=STD.newContractRate?'#00CEC9':'#FF6B6B', '📊'),
-    kpiHTML('新規売上合計', fmt(t.totalSales), '', '#74B9FF', '💴'),
-    kpiHTML('平均契約単価', fmt(t.avgUnit), `基準: ${fmt(STD.newContractUnitPrice)}`, '#FD79A8', '💎'),
-  ].join('');
-
-  const salesSorted = [...staffData].sort((a,b)=>b.newSales-a.newSales).slice(0,15);
-  destroyChart('newsales');
-  charts['newsales'] = new Chart(document.getElementById('chartNewSales'), {
-    type: 'bar',
-    data: {
-      labels: salesSorted.map(d=>d.name),
-      datasets: [{ data: salesSorted.map(d=>d.newSales), backgroundColor: salesSorted.map((_,i)=>i<3?'#00CEC9':i<7?'#74B9FF':'#6C5CE7'), borderRadius:6, barPercentage:0.6 }]
-    },
-    options: { indexAxis:'y', responsive:true, plugins:{legend:{display:false}}, scales:{x:{ticks:{callback:v=>'¥'+(v/1000).toFixed(0)+'K'}}} }
-  });
-
-  // Scatter-like grid
-  const contracted = staffData.filter(d=>d.newContracts>0);
-  document.getElementById('scatterGrid').innerHTML = contracted.map(d => {
-    const good = d.newContractRate >= STD.newContractRate;
-    return `<div class="scatter-item" style="border:1px solid ${good?'rgba(0,206,201,0.27)':'rgba(255,107,107,0.27)'}">
-      <div class="scatter-name">${d.name}</div>
-      <div class="scatter-rate" style="color:${good?'#00CEC9':'#FDCB6E'}">${pct(d.newContractRate)}</div>
-      <div class="scatter-price">${fmt(d.newContractUnitPrice)}</div>
-      <span class="badge ${good?'good':'bad'}">${good?'達成':'未達'}</span>
-    </div>`;
-  }).join('');
-
-  // ── Onda Tab ──
-  document.getElementById('kpi-onda').innerHTML = [
-    kpiHTML('オンダ新規数', t.totalOndaNew, '', '#74B9FF', '⚡'),
-    kpiHTML('オンダ契約数', t.totalOndaContracts, '', '#00CEC9', '✨'),
-    kpiHTML('オンダ契約率', pct(t.avgOndaRate), `基準: ${pct(STD.ondaContractRate)}`, t.avgOndaRate>=STD.ondaContractRate?'#00CEC9':'#FF6B6B', '📈'),
-    kpiHTML('オンダ売上合計', fmt(t.totalOndaSales), '', '#FD79A8', '💰'),
-  ].join('');
-
-  const ondaData = staffData.filter(d=>d.ondaNew>0).sort((a,b)=>b.ondaContractRate-a.ondaContractRate);
-  destroyChart('ondarate');
-  charts['ondarate'] = new Chart(document.getElementById('chartOndaRate'), {
-    type: 'bar',
-    data: {
-      labels: ondaData.map(d=>d.name),
-      datasets: [{ data: ondaData.map(d=>d.ondaContractRate*100), backgroundColor: ondaData.map(d=>d.ondaContractRate>=STD.ondaContractRate?'#00CEC9':d.ondaContractRate>0?'#FDCB6E':'#FF6B6B'), borderRadius:6, barPercentage:0.6 }]
-    },
-    options: { indexAxis:'y', responsive:true, plugins:{legend:{display:false}}, scales:{x:{beginAtZero:true,max:100,ticks:{callback:v=>v+'%'}}} }
-  });
-
-  const ondaPrice = ondaData.filter(d=>d.ondaContractUnitPrice>0).sort((a,b)=>b.ondaContractUnitPrice-a.ondaContractUnitPrice);
-  destroyChart('ondaprice');
-  charts['ondaprice'] = new Chart(document.getElementById('chartOndaPrice'), {
-    type: 'bar',
-    data: {
-      labels: ondaPrice.map(d=>d.name),
-      datasets: [{ data: ondaPrice.map(d=>d.ondaContractUnitPrice), backgroundColor: ondaPrice.map((_,i)=>i%2===0?'#74B9FF':'#A29BFE'), borderRadius:6, barPercentage:0.6 }]
-    },
-    options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{ticks:{callback:v=>'¥'+(v/1000).toFixed(0)+'K'}}} }
-  });
-
-  // ── Herb Tab ──
-  document.getElementById('kpi-herb').innerHTML = [
-    kpiHTML('ハーブ新規数', t.totalHerbNew, '', '#00B894', '🌿'),
-    kpiHTML('ハーブ契約数', t.totalHerbContracts, '', '#00CEC9', '✅'),
-    kpiHTML('ハーブ契約率', pct(t.avgHerbRate), `基準: ${pct(STD.herbContractRate)}`, t.avgHerbRate>=STD.herbContractRate?'#00CEC9':'#FF6B6B', '🎯'),
-    kpiHTML('ハーブ売上合計', fmt(t.totalHerbSales), '', '#FD79A8', '💰'),
-  ].join('');
-
-  const herbData = staffData.filter(d=>d.herbNew>0).sort((a,b)=>b.herbContractRate-a.herbContractRate);
-  destroyChart('herbrate');
-  charts['herbrate'] = new Chart(document.getElementById('chartHerbRate'), {
-    type: 'bar',
-    data: {
-      labels: herbData.map(d=>d.name),
-      datasets: [{ data: herbData.map(d=>d.herbContractRate*100), backgroundColor: herbData.map(d=>d.herbContractRate>=STD.herbContractRate?'#00CEC9':d.herbContractRate>0?'#FDCB6E':'#FF6B6B'), borderRadius:6, barPercentage:0.6 }]
-    },
-    options: { indexAxis:'y', responsive:true, plugins:{legend:{display:false}}, scales:{x:{beginAtZero:true,max:100,ticks:{callback:v=>v+'%'}}} }
-  });
-
-  const herbSales = herbData.filter(d=>d.herbSales>0).sort((a,b)=>b.herbSales-a.herbSales);
-  destroyChart('herbsales');
-  charts['herbsales'] = new Chart(document.getElementById('chartHerbSales'), {
-    type: 'bar',
-    data: {
-      labels: herbSales.map(d=>d.name),
-      datasets: [
-        { label:'売上', data: herbSales.map(d=>d.herbSales), backgroundColor:'#00B894', borderRadius:6, barPercentage:0.4 },
-        { label:'契約単価', data: herbSales.map(d=>d.herbUnitPrice), backgroundColor:'rgba(162,155,254,0.6)', borderRadius:6, barPercentage:0.4 }
-      ]
-    },
-    options: { responsive:true, plugins:{legend:{position:'bottom',labels:{boxWidth:12}}}, scales:{y:{ticks:{callback:v=>'¥'+(v/1000).toFixed(0)+'K'}}} }
-  });
-
-  // ── Staff Detail Tab ──
-  renderStaffSelector();
-  renderStaffDetail(staffData[selectedStaffIndex] || staffData[0]);
-}
-
-function renderStaffSelector() {
-  const sorted = [...staffData].sort((a,b)=>b.newContractRate-a.newContractRate);
-  document.getElementById('staffSelector').innerHTML = sorted.map((d,i) =>
-    `<button class="staff-btn ${i===selectedStaffIndex?'active':''}" onclick="selectStaff(${staffData.indexOf(d)})">${d.name}</button>`
-  ).join('');
-}
-
-function selectStaff(idx) {
-  selectedStaffIndex = idx;
-  renderStaffSelector();
-  renderStaffDetail(staffData[idx]);
-}
-
-function renderStaffDetail(s) {
-  if (!s) return;
-  const items = [
-    {l:'新規担当数',v:s.newAssigned}, {l:'新規契約数',v:s.newContracts},
-    {l:'新規契約率',v:pct(s.newContractRate),c:s.newContractRate>=STD.newContractRate?'#00CEC9':'#FF6B6B'},
-    {l:'新規契約単価',v:fmt(s.newContractUnitPrice)}, {l:'新規売上',v:fmt(s.newSales),c:'#74B9FF'},
-    {l:'オンダリフト新規数',v:s.ondaNew},
-    {l:'オンダリフト契約率',v:pct(s.ondaContractRate),c:s.ondaContractRate>=STD.ondaContractRate?'#00CEC9':'#FF6B6B'},
-    {l:'オンダリフト契約単価',v:fmt(s.ondaContractUnitPrice)}, {l:'ハーブ新規数',v:s.herbNew},
-    {l:'ハーブ契約率',v:pct(s.herbContractRate),c:s.herbContractRate>=STD.herbContractRate?'#00CEC9':'#FF6B6B'},
-    {l:'ハーブ売上',v:fmt(s.herbSales),c:'#00B894'}, {l:'ハーブ契約単価',v:fmt(s.herbUnitPrice)},
-  ];
-
-  document.getElementById('staffSummary').innerHTML = `
-    <div style="font-size:22px;font-weight:800;margin-bottom:4px">${s.name}</div>
-    <div style="font-size:12px;color:var(--text-sub);margin-bottom:20px">個人成績サマリー</div>
-    <div class="stat-grid">${items.map(i=>`
-      <div class="stat-item">
-        <div class="stat-label">${i.l}</div>
-        <div class="stat-value" style="color:${i.c||'var(--text)'}">${i.v}</div>
-      </div>`).join('')}
-    </div>`;
-
-  // Radar
-  destroyChart('radar');
-  charts['radar'] = new Chart(document.getElementById('chartRadar'), {
-    type: 'radar',
-    data: {
-      labels: ['新規契約率','オンダリフト契約率','ハーブ契約率','担当数','単価スコア'],
-      datasets: [{
-        label: s.name,
-        data: [s.newContractRate*100, s.ondaContractRate*100, s.herbContractRate*100, Math.min(s.newAssigned/10*100,100), Math.min(s.newContractUnitPrice/200000*100,100)],
-        backgroundColor: 'rgba(108,92,231,0.3)', borderColor: '#6C5CE7', borderWidth: 2, pointBackgroundColor: '#6C5CE7'
-      }]
-    },
-    options: { responsive:true, plugins:{legend:{display:false}}, scales:{r:{beginAtZero:true,max:100,ticks:{stepSize:20,color:'#8891A5'},grid:{color:'#1E2740'},pointLabels:{color:'#8891A5',font:{size:11}}}} }
-  });
-
-  // Progress bars
-  const progs = [
-    {l:'新規契約率',v:s.newContractRate,t:STD.newContractRate},
-    {l:'オンダリフト契約率',v:s.ondaContractRate,t:STD.ondaContractRate},
-    {l:'ハーブ契約率',v:s.herbContractRate,t:STD.herbContractRate},
-  ];
-  document.getElementById('staffProgress').innerHTML = `
-    <div class="chart-card-title">基準達成状況</div>
-    ${progs.map(p=>{
-      const good = p.v >= p.t;
-      const w = Math.min(p.v/p.t*100, 100);
-      return `<div class="progress-item">
-        <div class="progress-header">
-          <span class="progress-label">${p.l}</span>
-          <span class="progress-value" style="color:${good?'#00CEC9':'#FF6B6B'}">${pct(p.v)} / ${pct(p.t)}</span>
-        </div>
-        <div class="progress-track">
-          <div class="progress-fill" style="width:${w}%;background:linear-gradient(90deg,${good?'#00CEC9,#00B894':'#FF6B6B,#E17055'})"></div>
-        </div>
-      </div>`;
-    }).join('')}`;
-}
-
-// ══════════════════════════════════════════════════════════
-// DATA REFRESH
-// ══════════════════════════════════════════════════════════
 async function refreshData() {
   const btn = document.getElementById('refreshBtn');
   btn.classList.add('loading');
-  btn.textContent = '⏳ 取得中...';
+  btn.textContent = '⏳ 更新中';
+  try {
+    const res = await fetch(GAS_URL);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
 
-  const apiData = await fetchFromGoogleSheets();
-  if (apiData && apiData.length > 0) {
-    staffData = apiData.map(derive);
-    document.getElementById('configBanner').style.display = 'none';
-    document.getElementById('footerText').textContent = `※ Google Sheets APIからリアルタイム取得 ・ 最終更新: ${new Date().toLocaleString('ja-JP')}`;
-  } else {
-    staffData = STATIC_DATA.filter(d => d.newAssigned > 0).map(derive);
+    staffData = data.staff || [];
+    criteria = data.criteria || criteria;
+    activeStaff = staffData.filter(s => s.newCount > 0 && (s.newRate > 0 || s.ondaRate > 0 || s.herbRate > 0));
+
+    document.getElementById('periodLabel').textContent =
+      '集計期間：' + (data.period?.start || '--') + ' 〜 ' + (data.period?.end || '--');
+    document.getElementById('subNewRate').textContent = '基準: ' + criteria.newRate + '%';
+    document.getElementById('subHerbRate').textContent = '基準: ' + criteria.herbRate + '%';
+    document.getElementById('subOndaRate').textContent = '基準: ' + criteria.ondaRate + '%';
+    document.getElementById('subUnitPrice').textContent = '基準: ¥' + (criteria.unitPrice || 0).toLocaleString();
+
+    renderAll();
+    document.getElementById('lastUpdate').textContent = '最終更新: ' + new Date().toLocaleString('ja-JP');
+  } catch (err) {
+    alert('更新に失敗しました。通信環境を確認してください。');
+  } finally {
+    btn.classList.remove('loading');
+    btn.textContent = '🔄 更新';
   }
-
-  renderAll();
-  btn.classList.remove('loading');
-  btn.textContent = '🔄 データ更新';
 }
 
-// ══════════════════════════════════════════════════════════
-// TAB SWITCHING
-// ══════════════════════════════════════════════════════════
-document.getElementById('tabs').addEventListener('click', e => {
-  if (!e.target.classList.contains('tab')) return;
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  e.target.classList.add('active');
-  document.getElementById('tab-' + e.target.dataset.tab).classList.add('active');
-  // Re-render charts for the newly visible tab (Chart.js needs visible canvas)
-  setTimeout(() => renderAll(), 50);
-});
+// ============================================================
+// ヘルパー関数
+// ============================================================
+function fmt(n) { return n ? '¥' + n.toLocaleString() : '¥0'; }
+function pct(n) { return n + '%'; }
+function getRankClass(i) {
+  if (i===0) return 'rank-1';
+  if (i===1) return 'rank-2';
+  if (i===2) return 'rank-3';
+  return 'rank-other';
+}
+function esc(s) { return s.replace(/'/g, "\\'"); }
 
-// ══════════════════════════════════════════════════════════
-// INIT
-// ══════════════════════════════════════════════════════════
-(async function init() {
-  await refreshData();
-})();
+// ============================================================
+// AIアドバイス
+// ============================================================
+function generateAdvice(s) {
+  const tips=[], strengths=[];
+
+  if (s.newRate>=60) strengths.push('新規契約率が<span class="highlight">'+s.newRate+'%</span>と非常に高い');
+  else if (s.newRate>=criteria.newRate) strengths.push('新規契約率が基準をクリア');
+  else if (s.newRate>0) tips.push('新規契約率が<span class="improve">'+s.newRate+'%</span>（基準'+criteria.newRate+'%）。カウンセリング時のクロージングトークを見直してみましょう');
+  else tips.push('新規契約がまだ取れていません。先輩のカウンセリングを見学して<span class="improve">成功パターン</span>を学びましょう');
+
+  if (s.unitPrice>=100000) strengths.push('契約単価が<span class="highlight">'+fmt(s.unitPrice)+'</span>と高単価を維持');
+  else if (s.unitPrice>=criteria.unitPrice) strengths.push('契約単価は基準以上');
+  else if (s.unitPrice>0) tips.push('契約単価が<span class="improve">'+fmt(s.unitPrice)+'</span>とやや低め。メニュー提案時に上位コースの魅力をしっかり伝えましょう');
+
+  if (s.ondaRate>=67) strengths.push('オンダリフト契約率が<span class="highlight">'+s.ondaRate+'%</span>で優秀');
+  else if (s.ondaRate>=criteria.ondaRate) strengths.push('オンダリフト契約率が基準クリア');
+  else if (s.ondaCount>0 && s.ondaRate>0) tips.push('オンダリフト契約率をもう少し上げたいところ。ビフォーアフター写真を活用した<span class="improve">提案トーク</span>を試してみて');
+
+  if (s.herbRate>=50) strengths.push('ハーブ新規契約率が<span class="highlight">'+s.herbRate+'%</span>で良好');
+  else if (s.herbRate>=criteria.herbRate) strengths.push('ハーブ契約率が基準クリア');
+  else if (s.herbRate>0 && s.herbRate<criteria.herbRate) tips.push('ハーブの契約率に伸びしろあり。お客様の肌悩みに合わせた<span class="improve">ハーブの効果説明</span>を丁寧に');
+  else if (s.herbRate===0 && s.herbNew>0) tips.push('ハーブ新規のチャンスはあるのに契約に繋がっていません。<span class="improve">体験メニュー</span>の提案を意識してみましょう');
+
+  if (s.herbSales>=200000) strengths.push('ハーブ売上が<span class="highlight">'+fmt(s.herbSales)+'</span>で素晴らしい');
+  if (s.newCount>=8) strengths.push('担当数が<span class="highlight">'+s.newCount+'人</span>と多く、集客力が高い');
+  else if (s.newCount<=2) tips.push('担当数が少なめ。<span class="improve">シフトや集客</span>面の調整が必要かもしれません');
+
+  let html = '';
+  if (strengths.length>0) html += '<p style="margin-bottom:8px"><strong>💪 強み：</strong>' + strengths.join('。また、') + '。</p>';
+  if (tips.length>0) html += '<p><strong>🎯 改善ポイント：</strong>' + tips.join('。さらに、') + '。</p>';
+  if (strengths.length>0 && tips.length===0) html += '<p style="margin-top:8px">🌟 全体的にバランスの取れた素晴らしいパフォーマンスです！この調子で頑張りましょう！</p>';
+  if (strengths.length===0 && tips.length>0) html += '<p style="margin-top:8px">💡 一つずつ改善していけば大丈夫！まずは一番得意な分野から伸ばしていきましょう。</p>';
+  return html;
+}
+
+// ============================================================
+// 描画
+// ============================================================
+function renderAll() {
+  const act = activeStaff;
+
+  // サマリー
+  if (act.length === 0) {
+    document.getElementById('avgNewRate').textContent = '--';
+    document.getElementById('avgHerbRate').textContent = '--';
+    document.getElementById('avgOndaRate').textContent = '--';
+    document.getElementById('avgUnitPrice').textContent = '--';
+    document.getElementById('topPerformers').innerHTML = '<div class="no-data">📭 まだデータがありません</div>';
+    document.getElementById('needsSupport').innerHTML = '<div class="no-data">📭 まだデータがありません</div>';
+  } else {
+    const avgNew = Math.round(act.reduce((a,s)=>a+s.newRate,0)/act.length);
+    const herbAct = act.filter(s=>s.herbNew>0);
+    const avgHerb = herbAct.length ? Math.round(herbAct.reduce((a,s)=>a+s.herbRate,0)/herbAct.length) : 0;
+    const ondaAct = act.filter(s=>s.ondaCount>0);
+    const avgOnda = ondaAct.length ? Math.round(ondaAct.reduce((a,s)=>a+s.ondaRate,0)/ondaAct.length) : 0;
+    const priced = act.filter(s=>s.unitPrice>0);
+    const avgPrice = priced.length ? Math.round(priced.reduce((a,s)=>a+s.unitPrice,0)/priced.length) : 0;
+
+    document.getElementById('avgNewRate').textContent = avgNew + '%';
+    document.getElementById('avgHerbRate').textContent = avgHerb + '%';
+    document.getElementById('avgOndaRate').textContent = avgOnda + '%';
+    document.getElementById('avgUnitPrice').textContent = fmt(avgPrice);
+
+    // トップ3
+    const top3 = [...activeStaff].sort((a,b)=>b.newRate-a.newRate).slice(0,3);
+    document.getElementById('topPerformers').innerHTML = top3.map((s,i) => staffRowHTML(s,i,'top')).join('');
+
+    // サポート必要
+    const needHelp = activeStaff.filter(s=>s.newRate<criteria.newRate && s.newCount>=3).sort((a,b)=>a.newRate-b.newRate).slice(0,3);
+    document.getElementById('needsSupport').innerHTML = needHelp.length > 0
+      ? needHelp.map((s,i) => staffRowHTML(s,i+10,'support')).join('')
+      : '<div style="text-align:center;padding:12px;color:var(--gray-500);font-size:13px;">基準未達のスタッフはいません 🎉</div>';
+  }
+
+  // ランキング
+  renderRanking('rankNewRate','newRate', s=>pct(s.newRate));
+  renderRanking('rankUnitPrice','unitPrice', s=>fmt(s.unitPrice));
+  renderRanking('rankHerbSales','herbSales', s=>fmt(s.herbSales));
+
+  // アラート
+  renderAlerts();
+
+  // セレクトボックス
+  populateSelect();
+}
+
+function staffRowHTML(s, idx, mode) {
+  const rankCls = mode==='support' ? 'rank-other' : getRankClass(idx);
+  const alertCls = mode==='support' ? 'alert-row' : '';
+  return `<div class="staff-row ${alertCls}" onclick="openModal('${esc(s.name)}')">
+    <div class="rank-badge ${rankCls}">${mode==='support' ? '!' : (idx+1)}</div>
+    <div class="staff-info">
+      <div class="staff-name">${s.name}</div>
+      <div class="staff-stats">
+        <div class="staff-stat green">契約率 <span>${s.newRate}%</span></div>
+        <div class="staff-stat pink">単価 <span>${fmt(s.unitPrice)}</span></div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill ${mode==='support'?'pink':'green'}" style="width:${Math.min(s.newRate,100)}%"></div>
+      </div>
+    </div>
+    <div class="staff-arrow">›</div>
+  </div>`;
+}
+
+function renderRanking(id, key, formatter) {
+  const sorted = [...activeStaff].filter(s=>s[key]>0).sort((a,b)=>b[key]-a[key]).slice(0,8);
+  const max = sorted.length > 0 ? sorted[0][key] : 1;
+  document.getElementById(id).innerHTML = sorted.length > 0
+    ? sorted.map((s,i) => `<div class="comparison-item">
+        <div class="comparison-label">
+          <span class="comparison-name">${i+1}. ${s.name}</span>
+          <span class="comparison-val">${formatter(s)}</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill ${i<3?'green':i<6?'blue':'pink'}" style="width:${(s[key]/max*100)}%"></div>
+        </div>
+      </div>`).join('')
+    : '<div class="no-data">📭 データなし</div>';
+}
+
+function renderAlerts() {
+  const alerts = [];
+  staffData.filter(s=>s.newCount>0).forEach(s => {
+    const issues = [];
+    if (s.newRate>0 && s.newRate<criteria.newRate) issues.push('新規契約率 '+s.newRate+'% (基準'+criteria.newRate+'%)');
+    if (s.ondaCount>0 && s.ondaRate>0 && s.ondaRate<criteria.ondaRate) issues.push('オンダリフト率 '+s.ondaRate+'% (基準'+criteria.ondaRate+'%)');
+    if (s.herbNew>0 && s.herbRate>0 && s.herbRate<criteria.herbRate) issues.push('ハーブ率 '+s.herbRate+'% (基準'+criteria.herbRate+'%)');
+    if (s.newRate===0 && s.newCount>=3) issues.push('新規契約率 0%');
+    if (issues.length>0) alerts.push({name:s.name, issues, s});
+  });
+
+  document.getElementById('alertList').innerHTML = alerts.length > 0
+    ? alerts.map(a => `<div class="staff-row alert-row" onclick="openModal('${esc(a.name)}')">
+        <div class="rank-badge rank-other" style="background:var(--pink-soft);color:var(--pink-text)">⚠</div>
+        <div class="staff-info">
+          <div class="staff-name">${a.name}</div>
+          <div style="font-size:10px;color:var(--pink-text);margin-top:3px">${a.issues.join(' / ')}</div>
+        </div>
+        <div class="staff-arrow">›</div>
+      </div>`).join('')
+    : '<div class="no-data">✅ アラートはありません</div>';
+}
+
+function populateSelect() {
+  const sel = document.getElementById('staffSelect');
+  const currentVal = sel.value;
+  sel.innerHTML = '<option value="">選択してください</option>';
+  [...staffData].filter(s=>s.newCount>0).sort((a,b)=>a.name.localeCompare(b.name,'ja')).forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.name;
+    opt.textContent = s.name;
+    sel.appendChild(opt);
+  });
+  if (currentVal) sel.value = currentVal;
+}
+
+function showIndividual() {
+  const name = document.getElementById('staffSelect').value;
+  if (!name) { document.getElementById('individualContent').innerHTML = ''; return; }
+  const s = staffData.find(x => x.name === name);
+  if (!s) return;
+  renderDetail(s, 'individualContent');
+}
+
+function renderDetail(s, targetId) {
+  const skills = [
+    { label:'新規契約率', value:s.newRate, target:criteria.newRate },
+    { label:'オンダリフト契約率', value:s.ondaRate, target:criteria.ondaRate },
+    { label:'ハーブ新規契約率', value:s.herbRate, target:criteria.herbRate },
+  ];
+  document.getElementById(targetId).innerHTML = `
+    <div class="modal-stats">
+      <div class="modal-stat g"><div class="num">${s.newCount}</div><div class="lbl">新規担当数</div></div>
+      <div class="modal-stat p"><div class="num">${fmt(s.unitPrice)}</div><div class="lbl">契約単価</div></div>
+      <div class="modal-stat b"><div class="num">${fmt(s.herbSales)}</div><div class="lbl">ハーブ売上</div></div>
+    </div>
+    <div class="section-title" style="font-size:13px;">📊 スキルバランス</div>
+    <div class="skill-section">
+      ${skills.map(sk => `
+        <div class="skill-bar-item">
+          <div class="skill-bar-label">
+            <span class="name">${sk.label}</span>
+            <span class="val" style="color:${sk.value>=sk.target?'var(--green-main)':'var(--pink-text)'}">
+              ${sk.value}%${sk.value>=sk.target?' ✓':' (基準'+sk.target+'%)'}
+            </span>
+          </div>
+          <div class="skill-bar">
+            <div class="skill-bar-fill" style="width:${sk.value}%;background:${sk.value>=sk.target?'linear-gradient(90deg,var(--green-main),#4FD080)':'linear-gradient(90deg,var(--pink-accent),#FFB6C8)'}"></div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="ai-advice">
+      <div class="ai-advice-header">🤖 AIアドバイス <span class="ai-badge">AI</span></div>
+      ${generateAdvice(s)}
+    </div>
+  `;
+}
+
+// ============================================================
+// モーダル
+// ============================================================
+function openModal(name) {
+  const s = staffData.find(x => x.name === name);
+  if (!s) return;
+  document.getElementById('modalTitle').textContent = '📋 ' + s.name;
+  renderDetail(s, 'modalBody');
+  document.getElementById('modalOverlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModalDirect();
+}
+
+function closeModalDirect() {
+  document.getElementById('modalOverlay').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+// ============================================================
+// タブ切り替え
+// ============================================================
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ============================================================
+// 初期ロード
+// ============================================================
+loadData();
 </script>
 </body>
 </html>
-function doGet(e) {
-  const rangeA1 = (e && e.parameter && e.parameter.range)
-    ? e.parameter.range
-    : 'スタッフアラート(直営)!A4:R39';
-
-  const ss = SpreadsheetApp.openById('ここにスプレッドシートID');
-  const values = ss.getRange(rangeA1).getDisplayValues();
-
-  return ContentService
-    .createTextOutput(JSON.stringify({ values }))
-    .setMimeType(ContentService.MimeType.JSON);
-}
