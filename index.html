@@ -749,3 +749,15 @@ document.getElementById('tabs').addEventListener('click', e => {
 </script>
 </body>
 </html>
+function doGet(e) {
+  const rangeA1 = (e && e.parameter && e.parameter.range)
+    ? e.parameter.range
+    : 'スタッフアラート(直営)!A4:R39';
+
+  const ss = SpreadsheetApp.openById('ここにスプレッドシートID');
+  const values = ss.getRange(rangeA1).getDisplayValues();
+
+  return ContentService
+    .createTextOutput(JSON.stringify({ values }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
