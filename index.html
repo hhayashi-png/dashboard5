@@ -290,17 +290,12 @@
 // ③ 下記の値を埋める
 // ══════════════════════════════════════════════════════════
 const CONFIG = {
-  // スプレッドシートのURLから取得できるID
-  // 例: https://docs.google.com/spreadsheets/d/1AmYsEvyKvpAF4HokThApp21V1IyMvzC0_2ksafwDdIw/edit
-  SPREADSHEET_ID: '',
+  // Apps Script の「ウェブアプリURL（/exec）」を貼る
+  WEB_APP_URL: 'https://script.google.com/macros/s/xxxxxxxxxxxxxxxx/exec',
 
-  // Google Cloud Console で発行したAPIキー
-  API_KEY: '',
-
-  // データ範囲（シート名!セル範囲）
+  // GAS側に渡す範囲（今と同じ文字列でOK）
   RANGE: 'スタッフアラート(直営)!A4:R39',
 
-  // 基準値（行5のデータ）
   STANDARDS: {
     newContractRate: 0.35,
     newContractUnitPrice: 50000,
