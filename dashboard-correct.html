@@ -238,9 +238,9 @@
   <!-- TAB: Onda -->
   <div class="tab-content" id="tab-onda">
     <div class="kpi-grid" id="kpi-onda"></div>
-    <div class="section-title"><span class="icon">📊</span><h2>スタッフ別 オンデマンド契約率</h2><div class="line"></div></div>
+    <div class="section-title"><span class="icon">📊</span><h2>スタッフ別 オンダリフト契約率</h2><div class="line"></div></div>
     <div class="chart-card"><canvas id="chartOndaRate" height="400"></canvas></div>
-    <div class="section-title"><span class="icon">💎</span><h2>オンデマンド 契約単価分布</h2><div class="line"></div></div>
+    <div class="section-title"><span class="icon">💎</span><h2>オンダリフト 契約単価分布</h2><div class="line"></div></div>
     <div class="chart-card"><canvas id="chartOndaPrice"></canvas></div>
   </div>
 
@@ -496,7 +496,7 @@ function renderAll() {
   charts['catcmp'] = new Chart(document.getElementById('chartCategoryCompare'), {
     type: 'bar',
     data: {
-      labels: ['新規全体','オンデマンド','ハーブ'],
+      labels: ['新規全体','オンダリフト','ハーブ'],
       datasets: [
         { label:'実績', data:[t.avgRate*100,t.avgOndaRate*100,t.avgHerbRate*100], backgroundColor:['#6C5CE7','#74B9FF','#00B894'], borderRadius:6, barPercentage:0.5 },
         { label:'基準', data:[STD.newContractRate*100,STD.ondaContractRate*100,STD.herbContractRate*100], backgroundColor:['rgba(108,92,231,0.25)','rgba(116,185,255,0.25)','rgba(0,184,148,0.25)'], borderRadius:6, barPercentage:0.5 }
@@ -636,9 +636,9 @@ function renderStaffDetail(s) {
     {l:'新規担当数',v:s.newAssigned}, {l:'新規契約数',v:s.newContracts},
     {l:'新規契約率',v:pct(s.newContractRate),c:s.newContractRate>=STD.newContractRate?'#00CEC9':'#FF6B6B'},
     {l:'新規契約単価',v:fmt(s.newContractUnitPrice)}, {l:'新規売上',v:fmt(s.newSales),c:'#74B9FF'},
-    {l:'オンダ新規数',v:s.ondaNew},
-    {l:'オンダ契約率',v:pct(s.ondaContractRate),c:s.ondaContractRate>=STD.ondaContractRate?'#00CEC9':'#FF6B6B'},
-    {l:'オンダ契約単価',v:fmt(s.ondaContractUnitPrice)}, {l:'ハーブ新規数',v:s.herbNew},
+    {l:'オンダリフト新規数',v:s.ondaNew},
+    {l:'オンダリフト契約率',v:pct(s.ondaContractRate),c:s.ondaContractRate>=STD.ondaContractRate?'#00CEC9':'#FF6B6B'},
+    {l:'オンダリフト契約単価',v:fmt(s.ondaContractUnitPrice)}, {l:'ハーブ新規数',v:s.herbNew},
     {l:'ハーブ契約率',v:pct(s.herbContractRate),c:s.herbContractRate>=STD.herbContractRate?'#00CEC9':'#FF6B6B'},
     {l:'ハーブ売上',v:fmt(s.herbSales),c:'#00B894'}, {l:'ハーブ契約単価',v:fmt(s.herbUnitPrice)},
   ];
@@ -658,7 +658,7 @@ function renderStaffDetail(s) {
   charts['radar'] = new Chart(document.getElementById('chartRadar'), {
     type: 'radar',
     data: {
-      labels: ['新規契約率','オンダ契約率','ハーブ契約率','担当数','単価スコア'],
+      labels: ['新規契約率','オンダリフト契約率','ハーブ契約率','担当数','単価スコア'],
       datasets: [{
         label: s.name,
         data: [s.newContractRate*100, s.ondaContractRate*100, s.herbContractRate*100, Math.min(s.newAssigned/10*100,100), Math.min(s.newContractUnitPrice/200000*100,100)],
@@ -671,7 +671,7 @@ function renderStaffDetail(s) {
   // Progress bars
   const progs = [
     {l:'新規契約率',v:s.newContractRate,t:STD.newContractRate},
-    {l:'オンダ契約率',v:s.ondaContractRate,t:STD.ondaContractRate},
+    {l:'オンダリフト契約率',v:s.ondaContractRate,t:STD.ondaContractRate},
     {l:'ハーブ契約率',v:s.herbContractRate,t:STD.herbContractRate},
   ];
   document.getElementById('staffProgress').innerHTML = `
