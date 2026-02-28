@@ -342,11 +342,26 @@ const STATIC_DATA = [
 // Google Sheets API からデータ取得
 // ══════════════════════════════════════════════════════════
 async function fetchFromGoogleSheets() {
-  if (!CONFIG.SPREADSHEET_ID || !CONFIG.API_KEY) {
-    console.log('Google Sheets API未設定 → 静的データを使用');
+  if (!CONFIG.WEB_APP_URL) {
+    console.log('WebアプリURL未設定 → 静的データを使用');
     return null;
   }
 
+  // GASへ range を渡す
+  const url = `${CONFIG.WEB_APP_URL}?range=${encodeURIComponent(CONFIG.RANGE)}`;
+
+  try {
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(`WebApp Error: ${res.status}`);
+    const json = await res.json();
+
+    // GASが { values: [...] } を返す想定
+    return parseSheetData(json.values);
+  } catch (err) {
+    console.error('Webアプリ取得エラー:', err);
+    return null;
+  }
+}
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SPREADSHEET_ID}/values/${encodeURIComponent(CONFIG.RANGE)}?key=${CONFIG.API_KEY}`;
 
   try {
