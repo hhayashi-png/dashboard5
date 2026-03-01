@@ -2,113 +2,208 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>営業パフォーマンス</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>営業パフォーマンス ダッシュボード</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-:root{--gd:#1B7A4E;--gm:#2EAD6D;--gl:#E8F5EE;--gp:#F0FAF4;--ps:#FFE4EC;--pa:#FF8FAB;--pt:#D4547A;--bs:#E3F2FD;--ba:#64B5F6;--bt:#3478BE;--w:#FFF;--g50:#FAFAFA;--g1:#F5F5F5;--g2:#EEE;--g3:#E0E0E0;--g5:#9E9E9E;--g7:#616161;--g9:#212121;--ss:0 1px 3px rgba(0,0,0,.06);--sl:0 8px 24px rgba(0,0,0,.1);--r:10px}
+:root{
+  --gd:#1B7A4E;--gm:#2EAD6D;--gl:#E8F5EE;--gp:#F0FAF4;
+  --ps:#FFE4EC;--pa:#FF8FAB;--pt:#D4547A;
+  --bs:#E3F2FD;--ba:#64B5F6;--bt:#3478BE;
+  --w:#FFF;--g50:#FAFAFA;--g1:#F5F5F5;--g2:#EEE;--g3:#E0E0E0;--g5:#9E9E9E;--g7:#616161;--g9:#212121;
+  --ss:0 1px 3px rgba(0,0,0,.06);--sl:0 8px 24px rgba(0,0,0,.1);--r:12px
+}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Noto Sans JP',sans-serif;background:linear-gradient(145deg,var(--gp),var(--w) 40%,var(--bs));min-height:100vh;color:var(--g9);-webkit-font-smoothing:antialiased;max-width:480px;margin:0 auto;padding-bottom:80px}
-.hd{background:linear-gradient(135deg,var(--gd),var(--gm));padding:20px 20px 24px;color:#fff;position:sticky;top:0;z-index:100;box-shadow:var(--sl)}
-.hd-t{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
-.hd h1{font-family:'Zen Maru Gothic',sans-serif;font-size:18px;font-weight:700}
-.hd .dl{font-size:12px;opacity:.85}.hd .pr{font-size:11px;opacity:.7;margin-top:2px}
-.rb{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);color:#fff;padding:4px 10px;border-radius:16px;font-size:11px;cursor:pointer;font-family:'Noto Sans JP',sans-serif;text-decoration:none}
-.tabs{display:flex;gap:6px;padding:12px 16px;background:var(--w);border-bottom:1px solid var(--g2);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
-.tb{flex-shrink:0;padding:8px 16px;border-radius:20px;font-size:13px;font-weight:500;border:none;cursor:pointer;transition:all .25s;background:var(--g1);color:var(--g7);font-family:'Noto Sans JP',sans-serif}
+html{font-size:16px}
+body{
+  font-family:'Noto Sans JP',sans-serif;
+  background:linear-gradient(145deg,var(--gp),var(--w) 40%,var(--bs));
+  min-height:100vh;min-height:100dvh;
+  color:var(--g9);-webkit-font-smoothing:antialiased;
+  width:100%;max-width:540px;margin:0 auto;
+  padding-bottom:env(safe-area-inset-bottom,40px);
+  -webkit-text-size-adjust:100%;
+}
+
+/* Loading */
+.ld-ov{position:fixed;inset:0;background:linear-gradient(145deg,var(--gp),var(--w) 40%,var(--bs));display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;transition:opacity .4s}
+.ld-ov.hid{opacity:0;pointer-events:none}
+.ld-sp{width:52px;height:52px;border:4px solid var(--gl);border-top-color:var(--gm);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:18px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ld-t{font-family:'Zen Maru Gothic',sans-serif;font-size:16px;color:var(--gd);font-weight:500}
+.ld-s{font-size:13px;color:var(--g5);margin-top:8px}
+
+/* Error */
+.err{display:none;padding:48px 28px;text-align:center}
+.err.show{display:block}
+.err-i{font-size:52px;margin-bottom:14px}
+.err-m{font-size:15px;color:var(--g7);line-height:1.7;margin-bottom:18px}
+.err-d{font-size:12px;color:var(--g5);margin-bottom:18px;word-break:break-all}
+.re-btn{padding:12px 28px;border-radius:24px;border:none;background:var(--gm);color:#fff;font-size:15px;font-family:'Noto Sans JP',sans-serif;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(46,173,109,.3)}
+
+/* Header */
+.hd{background:linear-gradient(135deg,var(--gd),var(--gm));padding:22px 20px 26px;color:#fff;position:sticky;top:0;z-index:100;box-shadow:var(--sl)}
+.hd-t{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.hd h1{font-family:'Zen Maru Gothic',sans-serif;font-size:20px;font-weight:700;letter-spacing:.3px}
+.hd .dl{font-size:13px;opacity:.9}
+.hd .pr{font-size:12px;opacity:.75;margin-top:3px}
+.rfb{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);color:#fff;padding:6px 14px;border-radius:18px;font-size:12px;cursor:pointer;font-family:'Noto Sans JP',sans-serif;text-decoration:none;font-weight:500}
+
+/* Tabs */
+.tabs{display:flex;gap:8px;padding:14px 18px;background:var(--w);border-bottom:1px solid var(--g2);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tb{flex-shrink:0;padding:10px 18px;border-radius:22px;font-size:14px;font-weight:500;border:none;cursor:pointer;transition:all .25s;background:var(--g1);color:var(--g7);font-family:'Noto Sans JP',sans-serif}
 .tb.a{background:var(--gm);color:#fff;box-shadow:0 2px 8px rgba(46,173,109,.3)}
-.ct{padding:16px}
-.st{font-family:'Zen Maru Gothic',sans-serif;font-size:15px;font-weight:700;color:var(--gd);margin:20px 0 12px;display:flex;align-items:center;gap:6px}.st:first-child{margin-top:4px}
-.sg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px}
-.sc{background:var(--w);border-radius:var(--r);padding:14px;box-shadow:var(--ss);border:1px solid var(--g2)}
+
+/* Content */
+.ct{padding:18px}
+.st{font-family:'Zen Maru Gothic',sans-serif;font-size:16px;font-weight:700;color:var(--gd);margin:22px 0 14px;display:flex;align-items:center;gap:7px}
+.st:first-child{margin-top:6px}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px}
+.sc{background:var(--w);border-radius:var(--r);padding:16px;box-shadow:var(--ss);border:1px solid var(--g2)}
 .sc.gr{border-left:4px solid var(--gm)}.sc.pk{border-left:4px solid var(--pa)}.sc.bl{border-left:4px solid var(--ba)}
-.sc .lb{font-size:11px;color:var(--g5);font-weight:500;margin-bottom:4px}
-.sc .vl{font-size:22px;font-weight:700;font-family:'Zen Maru Gothic',sans-serif}
+.sc .lb{font-size:12px;color:var(--g5);font-weight:500;margin-bottom:5px}
+.sc .vl{font-size:24px;font-weight:700;font-family:'Zen Maru Gothic',sans-serif}
 .sc.gr .vl{color:var(--gd)}.sc.pk .vl{color:var(--pt)}.sc.bl .vl{color:var(--bt)}
-.sc .sb{font-size:10px;color:var(--g5);margin-top:2px}
-.rl{display:flex;flex-direction:column;gap:8px}
-.sr{background:var(--w);border-radius:var(--r);padding:12px 14px;box-shadow:var(--ss);border:1px solid var(--g2);display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .2s}.sr:active{transform:scale(.98);background:var(--gp)}
-.rb2{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
-.r1{background:linear-gradient(135deg,#FFD700,#FFA000);color:#fff}.r2{background:linear-gradient(135deg,#C0C0C0,#9E9E9E);color:#fff}.r3{background:linear-gradient(135deg,#CD7F32,#A0522D);color:#fff}.ro{background:var(--g1);color:var(--g5)}
-.si{flex:1;min-width:0}.sn{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ss2{display:flex;gap:8px;margin-top:3px}.s1{font-size:10px;color:var(--g5)}.s1 span{font-weight:600}.s1.gr span{color:var(--gm)}.s1.pk span{color:var(--pt)}
-.sa{color:var(--g3);font-size:16px;flex-shrink:0}
-.pb{height:6px;background:var(--g1);border-radius:3px;overflow:hidden;margin-top:6px}
-.pf{height:100%;border-radius:3px;transition:width .6s}.pf.gr{background:linear-gradient(90deg,var(--gm),#4FD080)}.pf.pk{background:linear-gradient(90deg,var(--pa),#FFB6C8)}.pf.bl{background:linear-gradient(90deg,var(--ba),#90CAF9)}
-.mo{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:200;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}.mo.ac{display:flex}
-.ml{background:var(--w);width:100%;max-width:480px;max-height:88vh;border-radius:20px 20px 0 0;overflow-y:auto;animation:su .35s ease;padding-bottom:32px}
+.sc .sb{font-size:11px;color:var(--g5);margin-top:3px}
+
+/* Staff rows */
+.rl{display:flex;flex-direction:column;gap:10px}
+.sr{background:var(--w);border-radius:var(--r);padding:14px 16px;box-shadow:var(--ss);border:1px solid var(--g2);display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .2s}
+.sr:active{transform:scale(.98);background:var(--gp)}
+.rb2{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.r1{background:linear-gradient(135deg,#FFD700,#FFA000);color:#fff}
+.r2{background:linear-gradient(135deg,#C0C0C0,#9E9E9E);color:#fff}
+.r3{background:linear-gradient(135deg,#CD7F32,#A0522D);color:#fff}
+.ro{background:var(--g1);color:var(--g5)}
+.si{flex:1;min-width:0}
+.sn{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ss2{display:flex;gap:10px;margin-top:4px}
+.s1{font-size:11px;color:var(--g5)}.s1 span{font-weight:600}.s1.gr span{color:var(--gm)}.s1.pk span{color:var(--pt)}
+.sa{color:var(--g3);font-size:18px;flex-shrink:0}
+.pb{height:7px;background:var(--g1);border-radius:4px;overflow:hidden;margin-top:7px}
+.pf{height:100%;border-radius:4px;transition:width .6s}
+.pf.gr{background:linear-gradient(90deg,var(--gm),#4FD080)}
+.pf.pk{background:linear-gradient(90deg,var(--pa),#FFB6C8)}
+.pf.bl{background:linear-gradient(90deg,var(--ba),#90CAF9)}
+
+/* Modal */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
+.mo.ac{display:flex}
+.ml{background:var(--w);width:100%;max-width:540px;max-height:90vh;border-radius:22px 22px 0 0;overflow-y:auto;animation:su .35s ease;padding-bottom:env(safe-area-inset-bottom,36px)}
 @keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.mh2{width:36px;height:4px;background:var(--g3);border-radius:2px;margin:10px auto 0}
-.mhd{padding:16px 20px 12px;border-bottom:1px solid var(--g2);display:flex;justify-content:space-between;align-items:center}
-.mhd h2{font-family:'Zen Maru Gothic',sans-serif;font-size:17px;font-weight:700;color:var(--gd)}
-.mc{width:32px;height:32px;border-radius:50%;border:none;background:var(--g1);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--g5)}
-.mb{padding:16px 20px}
-.ski{margin-bottom:10px}.skl{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}.skl .nm{color:var(--g7);font-weight:500}.skl .vv{font-weight:700}
-.skb{height:8px;background:var(--g1);border-radius:4px;overflow:hidden}.skf{height:100%;border-radius:4px;transition:width .8s cubic-bezier(.25,.46,.45,.94)}
-.ai{background:linear-gradient(135deg,var(--gp),var(--ps) 50%,var(--bs));border-radius:var(--r);padding:16px;margin-top:12px;border:1px solid var(--gl)}
-.aih{display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:13px;font-weight:700;color:var(--gd)}
-.aib{background:var(--gm);color:#fff;font-size:9px;padding:2px 6px;border-radius:8px;font-weight:700}
-.ai p{font-size:12.5px;line-height:1.7;color:var(--g7)}
-.hl{background:rgba(46,173,109,.15);padding:1px 4px;border-radius:3px;font-weight:600;color:var(--gd)}
-.im{background:rgba(255,143,171,.2);padding:1px 4px;border-radius:3px;font-weight:600;color:var(--pt)}
-.ms{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px}
-.mt{text-align:center;background:var(--g50);padding:10px 6px;border-radius:var(--r)}.mt .n{font-size:18px;font-weight:700;font-family:'Zen Maru Gothic',sans-serif}.mt .l{font-size:10px;color:var(--g5);margin-top:2px}
+.mh2{width:40px;height:4px;background:var(--g3);border-radius:2px;margin:12px auto 0}
+.mhd{padding:18px 22px 14px;border-bottom:1px solid var(--g2);display:flex;justify-content:space-between;align-items:center}
+.mhd h2{font-family:'Zen Maru Gothic',sans-serif;font-size:18px;font-weight:700;color:var(--gd)}
+.mc{width:36px;height:36px;border-radius:50%;border:none;background:var(--g1);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--g5)}
+.mb{padding:18px 22px}
+
+/* Skills */
+.ski{margin-bottom:12px}
+.skl{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px}
+.skl .nm{color:var(--g7);font-weight:500}.skl .vv{font-weight:700}
+.skb{height:9px;background:var(--g1);border-radius:5px;overflow:hidden}
+.skf{height:100%;border-radius:5px;transition:width .8s cubic-bezier(.25,.46,.45,.94)}
+
+/* AI advice */
+.ai{background:linear-gradient(135deg,var(--gp),var(--ps) 50%,var(--bs));border-radius:var(--r);padding:18px;margin-top:14px;border:1px solid var(--gl)}
+.aih{display:flex;align-items:center;gap:7px;margin-bottom:10px;font-size:14px;font-weight:700;color:var(--gd)}
+.aib{background:var(--gm);color:#fff;font-size:10px;padding:2px 7px;border-radius:8px;font-weight:700}
+.ai p{font-size:13.5px;line-height:1.75;color:var(--g7)}
+.hl{background:rgba(46,173,109,.15);padding:1px 5px;border-radius:3px;font-weight:600;color:var(--gd)}
+.im{background:rgba(255,143,171,.2);padding:1px 5px;border-radius:3px;font-weight:600;color:var(--pt)}
+
+/* Modal stats */
+.ms{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px}
+.mt{text-align:center;background:var(--g50);padding:12px 8px;border-radius:var(--r)}
+.mt .n{font-size:20px;font-weight:700;font-family:'Zen Maru Gothic',sans-serif}
+.mt .l{font-size:11px;color:var(--g5);margin-top:3px}
 .mt.g .n{color:var(--gd)}.mt.p .n{color:var(--pt)}.mt.b .n{color:var(--bt)}
+
+/* Tabs */
 .tp{display:none}.tp.ac{display:block}
-.ci{margin-bottom:14px}.cl{display:flex;justify-content:space-between;margin-bottom:4px}
-.cn{font-size:12px;font-weight:500;color:var(--g7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55%}.cv{font-size:12px;font-weight:700;color:var(--gd)}
-.sw{position:relative;margin-bottom:16px}.cs{width:100%;padding:10px 14px;border-radius:var(--r);border:2px solid var(--gl);background:var(--w);font-size:14px;font-family:'Noto Sans JP',sans-serif;font-weight:500;color:var(--g9);appearance:none;cursor:pointer;outline:none}.cs:focus{border-color:var(--gm)}
-.saa{position:absolute;right:14px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--gm)}
+
+/* Ranking bars */
+.ci{margin-bottom:16px}
+.cl{display:flex;justify-content:space-between;margin-bottom:5px}
+.cn{font-size:13px;font-weight:500;color:var(--g7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55%}
+.cv{font-size:13px;font-weight:700;color:var(--gd)}
+
+/* Select */
+.sw{position:relative;margin-bottom:18px}
+.cs{width:100%;padding:12px 16px;border-radius:var(--r);border:2px solid var(--gl);background:var(--w);font-size:15px;font-family:'Noto Sans JP',sans-serif;font-weight:500;color:var(--g9);appearance:none;cursor:pointer;outline:none}
+.cs:focus{border-color:var(--gm)}
+.saa{position:absolute;right:16px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--gm);font-size:14px}
+
 .ar{border-left:4px solid var(--pa) !important}
-.nd{text-align:center;padding:24px;color:var(--g5);font-size:13px}
-.lu{text-align:center;padding:16px;font-size:10px;color:var(--g5)}
-@keyframes fi{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}.an{animation:fi .4s ease forwards}
+.nd{text-align:center;padding:28px;color:var(--g5);font-size:14px}
+.lu{text-align:center;padding:18px;font-size:11px;color:var(--g5)}
+
+@keyframes fi{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.an{animation:fi .4s ease forwards}
 .d1{animation-delay:.05s;opacity:0}.d2{animation-delay:.1s;opacity:0}.d3{animation-delay:.15s;opacity:0}.d4{animation-delay:.2s;opacity:0}
 </style>
 </head>
 <body>
 
-<div class="hd">
-  <div class="hd-t"><h1>🌿 営業パフォーマンス</h1><a class="rb" href="javascript:location.reload()">🔄 更新</a></div>
-  <div class="dl" id="upd"></div>
-  <div class="pr" id="prd"></div>
+<div class="ld-ov" id="lo">
+  <div class="ld-sp"></div>
+  <div class="ld-t">🌿 データを取得中...</div>
+  <div class="ld-s">スプレッドシートから最新情報を読み込んでいます</div>
 </div>
 
-<div class="tabs">
-  <button class="tb a" onclick="T('ov',this)">📊 全体</button>
-  <button class="tb" onclick="T('rk',this)">🏆 ランキング</button>
-  <button class="tb" onclick="T('id',this)">👤 個人分析</button>
-  <button class="tb" onclick="T('al',this)">🚨 アラート</button>
+<div class="err" id="errS">
+  <div class="err-i">😥</div>
+  <div class="err-m" id="errM">データの取得に失敗しました。</div>
+  <div class="err-d" id="errD"></div>
+  <button class="re-btn" onclick="loadData()">🔄 再読み込み</button>
 </div>
 
-<div class="ct">
-  <div class="tp ac" id="tp-ov">
-    <div class="st an">📈 全体サマリー</div>
-    <div class="sg">
-      <div class="sc gr an d1"><div class="lb">新規契約率（平均）</div><div class="vl" id="v1">--</div><div class="sb" id="s1"></div></div>
-      <div class="sc pk an d2"><div class="lb">ハーブ新規契約率（平均）</div><div class="vl" id="v2">--</div><div class="sb" id="s2"></div></div>
-      <div class="sc bl an d3"><div class="lb">オンダリフト契約率（平均）</div><div class="vl" id="v3">--</div><div class="sb" id="s3"></div></div>
-      <div class="sc gr an d4"><div class="lb">新規契約単価（平均）</div><div class="vl" id="v4">--</div><div class="sb" id="s4"></div></div>
+<div id="app" style="display:none">
+  <div class="hd">
+    <div class="hd-t"><h1>🌿 営業パフォーマンス</h1><a class="rfb" href="javascript:location.reload()">🔄 更新</a></div>
+    <div class="dl" id="upd"></div>
+    <div class="pr" id="prd"></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tb a" onclick="T('ov',this)">📊 全体</button>
+    <button class="tb" onclick="T('rk',this)">🏆 ランキング</button>
+    <button class="tb" onclick="T('id',this)">👤 個人分析</button>
+    <button class="tb" onclick="T('al',this)">🚨 アラート</button>
+  </div>
+
+  <div class="ct">
+    <div class="tp ac" id="tp-ov">
+      <div class="st an">📈 全体サマリー</div>
+      <div class="sg">
+        <div class="sc gr an d1"><div class="lb">新規契約率（平均）</div><div class="vl" id="v1">--</div><div class="sb" id="s1"></div></div>
+        <div class="sc pk an d2"><div class="lb">ハーブ新規契約率（平均）</div><div class="vl" id="v2">--</div><div class="sb" id="s2"></div></div>
+        <div class="sc bl an d3"><div class="lb">オンダリフト契約率（平均）</div><div class="vl" id="v3">--</div><div class="sb" id="s3"></div></div>
+        <div class="sc gr an d4"><div class="lb">新規契約単価（平均）</div><div class="vl" id="v4">--</div><div class="sb" id="s4"></div></div>
+      </div>
+      <div class="st an">🌟 トップパフォーマー</div><div id="top" class="rl"></div>
+      <div class="st an" style="margin-top:26px">⚠️ サポートが必要</div><div id="nds" class="rl"></div>
     </div>
-    <div class="st an">🌟 トップパフォーマー</div><div id="top" class="rl"></div>
-    <div class="st an" style="margin-top:24px">⚠️ サポートが必要</div><div id="nds" class="rl"></div>
+    <div class="tp" id="tp-rk">
+      <div class="st">🏅 新規契約率ランキング</div><div id="rk1" class="rl"></div>
+      <div class="st" style="margin-top:22px">💰 契約単価ランキング</div><div id="rk2" class="rl"></div>
+      <div class="st" style="margin-top:22px">🌿 ハーブ契約売上ランキング</div><div id="rk3" class="rl"></div>
+    </div>
+    <div class="tp" id="tp-id">
+      <div class="st">👤 スタッフを選択</div>
+      <div class="sw"><select class="cs" id="sel" onchange="SI()"><option value="">選択してください</option></select><div class="saa">▼</div></div>
+      <div id="idc"></div>
+    </div>
+    <div class="tp" id="tp-al">
+      <div class="st">🚨 基準未達アラート</div>
+      <p style="font-size:13px;color:var(--g5);margin-bottom:14px">各指標で基準値を下回っているスタッフを表示</p>
+      <div id="al1" class="rl"></div>
+    </div>
   </div>
-  <div class="tp" id="tp-rk">
-    <div class="st">🏅 新規契約率ランキング</div><div id="rk1" class="rl"></div>
-    <div class="st" style="margin-top:20px">💰 契約単価ランキング</div><div id="rk2" class="rl"></div>
-    <div class="st" style="margin-top:20px">🌿 ハーブ契約売上ランキング</div><div id="rk3" class="rl"></div>
-  </div>
-  <div class="tp" id="tp-id">
-    <div class="st">👤 スタッフを選択</div>
-    <div class="sw"><select class="cs" id="sel" onchange="SI()"><option value="">選択してください</option></select><div class="saa">▼</div></div>
-    <div id="idc"></div>
-  </div>
-  <div class="tp" id="tp-al">
-    <div class="st">🚨 基準未達アラート</div>
-    <p style="font-size:12px;color:var(--g5);margin-bottom:12px">各指標で基準値を下回っているスタッフを表示</p>
-    <div id="al1" class="rl"></div>
-  </div>
+  <div class="lu" id="lu"></div>
 </div>
-<div class="lu" id="lu"></div>
 
 <div class="mo" id="mo" onclick="if(event.target===this)CD()">
   <div class="ml" onclick="event.stopPropagation()">
@@ -119,76 +214,112 @@ body{font-family:'Noto Sans JP',sans-serif;background:linear-gradient(145deg,var
 </div>
 
 <script>
-var DATA = <?!= jsonData ?>;
-var D = DATA.staff;
-var C = DATA.criteria;
-var A = D.filter(function(s){ return s.newCount > 0 && (s.newRate > 0 || s.ondaRate > 0 || s.herbRate > 0); });
+// ============================================================
+// GAS URL - JSONP対応版
+// ============================================================
+var GAS = "https://script.google.com/macros/s/AKfycbwtOwSrE5mRtfWswHKq9ju3ejL9fUTxj_FLuFRrBAZJmepqcWdR96gOCvXGjofx5Rhs/exec";
 
-function F(n){ return n ? "¥" + n.toLocaleString() : "¥0"; }
-function P(n){ return n + "%"; }
-function RC(i){ return i===0?"r1":i===1?"r2":i===2?"r3":"ro"; }
+var D=[],C={},A=[];
 
-function GA(s){
-  var t=[],g=[];
-  if(s.newRate>=60) g.push("新規契約率が<span class='hl'>"+s.newRate+"%</span>と非常に高い");
-  else if(s.newRate>=C.newRate) g.push("新規契約率が基準をクリア");
-  else if(s.newRate>0) t.push("新規契約率が<span class='im'>"+s.newRate+"%</span>（基準"+C.newRate+"%）。クロージングトークを見直しましょう");
-  else t.push("先輩のカウンセリングで<span class='im'>成功パターン</span>を学びましょう");
-  if(s.unitPrice>=100000) g.push("契約単価<span class='hl'>"+F(s.unitPrice)+"</span>で高単価維持");
-  else if(s.unitPrice>=C.unitPrice) g.push("契約単価は基準以上");
-  else if(s.unitPrice>0) t.push("契約単価<span class='im'>"+F(s.unitPrice)+"</span>とやや低め");
-  if(s.ondaRate>=67) g.push("オンダリフト率<span class='hl'>"+s.ondaRate+"%</span>で優秀");
-  else if(s.ondaRate>=C.ondaRate) g.push("オンダリフト率が基準クリア");
-  else if(s.ondaCount>0&&s.ondaRate>0) t.push("オンダリフト率をもう少し上げたいところ");
-  if(s.herbRate>=50) g.push("ハーブ率<span class='hl'>"+s.herbRate+"%</span>で良好");
-  else if(s.herbRate>=C.herbRate) g.push("ハーブ率が基準クリア");
-  else if(s.herbRate>0&&s.herbRate<C.herbRate) t.push("ハーブの契約率に伸びしろあり");
-  else if(s.herbRate===0&&s.herbNew>0) t.push("<span class='im'>体験メニュー</span>の提案を意識しましょう");
-  if(s.herbSales>=200000) g.push("ハーブ売上<span class='hl'>"+F(s.herbSales)+"</span>で素晴らしい");
-  if(s.newCount>=8) g.push("担当数<span class='hl'>"+s.newCount+"人</span>と集客力が高い");
-  else if(s.newCount<=2) t.push("担当数が少なめ");
-  var h="";
-  if(g.length>0) h+="<p style='margin-bottom:8px'><strong>💪 強み：</strong>"+g.join("。")+"。</p>";
-  if(t.length>0) h+="<p><strong>🎯 改善ポイント：</strong>"+t.join("。")+"。</p>";
-  if(g.length>0&&t.length===0) h+="<p style='margin-top:8px'>🌟 素晴らしい！この調子で！</p>";
-  if(g.length===0&&t.length>0) h+="<p style='margin-top:8px'>💡 一つずつ改善すれば大丈夫！</p>";
-  return h;
+function loadData(){
+  document.getElementById("lo").classList.remove("hid");
+  document.getElementById("errS").classList.remove("show");
+  document.getElementById("app").style.display="none";
+
+  // Try JSONP first, then fetch
+  jsonp("_cb"+Date.now()).then(ok).catch(function(){
+    return fetch(GAS+"?json=1",{redirect:"follow"}).then(function(r){return r.json()}).then(ok);
+  }).catch(function(e){
+    document.getElementById("errM").textContent="データの取得に失敗しました";
+    document.getElementById("errD").textContent=e.message||"";
+    document.getElementById("errS").classList.add("show");
+    document.getElementById("lo").classList.add("hid");
+  });
 }
 
-function mkRow(s,i,mode){
-  var div=document.createElement("div");
-  div.className="sr"+(mode==="s"?" ar":"");
-  div.onclick=function(){OM(s.name)};
-  div.innerHTML='<div class="rb2 '+(mode==="s"?"ro":RC(i))+'">'+(mode==="s"?"!":(i+1))+'</div><div class="si"><div class="sn">'+s.name+'</div><div class="ss2"><div class="s1 gr">契約率 <span>'+s.newRate+'%</span></div><div class="s1 pk">単価 <span>'+F(s.unitPrice)+'</span></div></div><div class="pb"><div class="pf '+(mode==="s"?"pk":"gr")+'" style="width:'+Math.min(s.newRate,100)+'%"></div></div></div><div class="sa">\u203A</div>';
-  return div;
+function jsonp(cb){
+  return new Promise(function(res,rej){
+    var to=setTimeout(function(){cl();rej(new Error("timeout"))},20000);
+    function cl(){clearTimeout(to);delete window[cb];var e=document.getElementById("j_"+cb);if(e)e.remove()}
+    window[cb]=function(d){cl();res(d)};
+    var s=document.createElement("script");s.id="j_"+cb;
+    s.src=GAS+"?callback="+cb+"&t="+Date.now();
+    s.onerror=function(){cl();rej(new Error("script error"))};
+    document.body.appendChild(s);
+  });
 }
 
-function RR(id,key,fm){
-  var so=A.filter(function(s){return s[key]>0}).sort(function(a,b){return b[key]-a[key]}).slice(0,8);
-  var mx=so.length>0?so[0][key]:1;
-  var el=document.getElementById(id);
-  if(so.length===0){el.innerHTML='<div class="nd">📭 データなし</div>';return;}
-  el.innerHTML=so.map(function(s,i){return '<div class="ci"><div class="cl"><span class="cn">'+(i+1)+'. '+s.name+'</span><span class="cv">'+fm(s)+'</span></div><div class="pb"><div class="pf '+(i<3?"gr":i<6?"bl":"pk")+'" style="width:'+(s[key]/mx*100)+'%"></div></div></div>';}).join("");
-}
-
-function RD(s,tid){
-  var sk=[{l:"新規契約率",v:s.newRate,t:C.newRate},{l:"オンダリフト契約率",v:s.ondaRate,t:C.ondaRate},{l:"ハーブ新規契約率",v:s.herbRate,t:C.herbRate}];
-  var h='<div class="ms"><div class="mt g"><div class="n">'+s.newCount+'</div><div class="l">新規担当数</div></div><div class="mt p"><div class="n">'+F(s.unitPrice)+'</div><div class="l">契約単価</div></div><div class="mt b"><div class="n">'+F(s.herbSales)+'</div><div class="l">ハーブ売上</div></div></div><div class="st" style="font-size:13px">📊 スキルバランス</div><div>';
-  sk.forEach(function(k){var ok=k.v>=k.t;h+='<div class="ski"><div class="skl"><span class="nm">'+k.l+'</span><span class="vv" style="color:'+(ok?"var(--gm)":"var(--pt)")+'">'+k.v+'%'+(ok?" \u2713":" (基準"+k.t+"%)")+'</span></div><div class="skb"><div class="skf" style="width:'+k.v+'%;background:'+(ok?"linear-gradient(90deg,var(--gm),#4FD080)":"linear-gradient(90deg,var(--pa),#FFB6C8)")+'"></div></div></div>';});
-  h+='</div><div class="ai"><div class="aih">🤖 AIアドバイス <span class="aib">AI</span></div>'+GA(s)+'</div>';
-  document.getElementById(tid).innerHTML=h;
-}
-
-function init(){
-  document.getElementById("upd").textContent=DATA.updated;
-  document.getElementById("prd").textContent="集計期間："+DATA.period.start+" 〜 "+DATA.period.end;
+function ok(data){
+  D=data.staff||[];
+  C=data.criteria||{newRate:35,ondaRate:33,herbRate:40,unitPrice:50000};
+  A=D.filter(function(s){return s.newCount>0&&(s.newRate>0||s.ondaRate>0||s.herbRate>0)});
+  document.getElementById("upd").textContent=data.updated||new Date().toLocaleString("ja-JP");
+  document.getElementById("prd").textContent="集計期間："+(data.period?data.period.start:"--")+" 〜 "+(data.period?data.period.end:"--");
   document.getElementById("s1").textContent="基準: "+C.newRate+"%";
   document.getElementById("s2").textContent="基準: "+C.herbRate+"%";
   document.getElementById("s3").textContent="基準: "+C.ondaRate+"%";
   document.getElementById("s4").textContent="基準: ¥"+(C.unitPrice||0).toLocaleString();
-  document.getElementById("lu").textContent="最終更新: "+DATA.updated;
+  document.getElementById("lu").textContent="最終更新: "+(data.updated||new Date().toLocaleString("ja-JP"));
+  render();
+  document.getElementById("app").style.display="block";
+  document.getElementById("lo").classList.add("hid");
+}
 
-  if(A.length===0){
+function F(n){return n?"¥"+n.toLocaleString():"¥0"}
+function P(n){return n+"%"}
+function RC(i){return i===0?"r1":i===1?"r2":i===2?"r3":"ro"}
+
+function GA(s){
+  var t=[],g=[];
+  if(s.newRate>=60)g.push("新規契約率が<span class='hl'>"+s.newRate+"%</span>と非常に高い");
+  else if(s.newRate>=C.newRate)g.push("新規契約率が基準をクリア");
+  else if(s.newRate>0)t.push("新規契約率が<span class='im'>"+s.newRate+"%</span>（基準"+C.newRate+"%）。クロージングトークを見直しましょう");
+  else t.push("先輩のカウンセリングで<span class='im'>成功パターン</span>を学びましょう");
+  if(s.unitPrice>=100000)g.push("契約単価<span class='hl'>"+F(s.unitPrice)+"</span>で高単価維持");
+  else if(s.unitPrice>=C.unitPrice)g.push("契約単価は基準以上");
+  else if(s.unitPrice>0)t.push("契約単価<span class='im'>"+F(s.unitPrice)+"</span>とやや低め");
+  if(s.ondaRate>=67)g.push("オンダリフト率<span class='hl'>"+s.ondaRate+"%</span>で優秀");
+  else if(s.ondaRate>=C.ondaRate)g.push("オンダリフト率が基準クリア");
+  else if(s.ondaCount>0&&s.ondaRate>0)t.push("オンダリフト率をもう少し上げたいところ");
+  if(s.herbRate>=50)g.push("ハーブ率<span class='hl'>"+s.herbRate+"%</span>で良好");
+  else if(s.herbRate>=C.herbRate)g.push("ハーブ率が基準クリア");
+  else if(s.herbRate>0&&s.herbRate<C.herbRate)t.push("ハーブの契約率に伸びしろあり");
+  else if(s.herbRate===0&&s.herbNew>0)t.push("<span class='im'>体験メニュー</span>の提案を意識しましょう");
+  if(s.herbSales>=200000)g.push("ハーブ売上<span class='hl'>"+F(s.herbSales)+"</span>で素晴らしい");
+  if(s.newCount>=8)g.push("担当数<span class='hl'>"+s.newCount+"人</span>と集客力が高い");
+  else if(s.newCount<=2)t.push("担当数が少なめ");
+  var h="";
+  if(g.length>0)h+="<p style='margin-bottom:8px'><strong>💪 強み：</strong>"+g.join("。")+"。</p>";
+  if(t.length>0)h+="<p><strong>🎯 改善ポイント：</strong>"+t.join("。")+"。</p>";
+  if(g.length>0&&t.length===0)h+="<p style='margin-top:8px'>🌟 素晴らしい！この調子で！</p>";
+  if(g.length===0&&t.length>0)h+="<p style='margin-top:8px'>💡 一つずつ改善すれば大丈夫！</p>";
+  return h;
+}
+
+function mkRow(s,i,m){
+  var d=document.createElement("div");d.className="sr"+(m==="s"?" ar":"");
+  d.onclick=function(){OM(s.name)};
+  d.innerHTML='<div class="rb2 '+(m==="s"?"ro":RC(i))+'">'+(m==="s"?"!":(i+1))+'</div><div class="si"><div class="sn">'+s.name+'</div><div class="ss2"><div class="s1 gr">契約率 <span>'+s.newRate+'%</span></div><div class="s1 pk">単価 <span>'+F(s.unitPrice)+'</span></div></div><div class="pb"><div class="pf '+(m==="s"?"pk":"gr")+'" style="width:'+Math.min(s.newRate,100)+'%"></div></div></div><div class="sa">\u203A</div>';
+  return d;
+}
+
+function RR(id,key,fm){
+  var so=A.filter(function(s){return s[key]>0}).sort(function(a,b){return b[key]-a[key]}).slice(0,8);
+  var mx=so.length>0?so[0][key]:1,el=document.getElementById(id);
+  if(!so.length){el.innerHTML='<div class="nd">📭 データなし</div>';return}
+  el.innerHTML=so.map(function(s,i){return '<div class="ci"><div class="cl"><span class="cn">'+(i+1)+'. '+s.name+'</span><span class="cv">'+fm(s)+'</span></div><div class="pb"><div class="pf '+(i<3?"gr":i<6?"bl":"pk")+'" style="width:'+(s[key]/mx*100)+'%"></div></div></div>'}).join("");
+}
+
+function RD(s,tid){
+  var sk=[{l:"新規契約率",v:s.newRate,t:C.newRate},{l:"オンダリフト契約率",v:s.ondaRate,t:C.ondaRate},{l:"ハーブ新規契約率",v:s.herbRate,t:C.herbRate}];
+  var h='<div class="ms"><div class="mt g"><div class="n">'+s.newCount+'</div><div class="l">新規担当数</div></div><div class="mt p"><div class="n">'+F(s.unitPrice)+'</div><div class="l">契約単価</div></div><div class="mt b"><div class="n">'+F(s.herbSales)+'</div><div class="l">ハーブ売上</div></div></div><div class="st" style="font-size:14px">📊 スキルバランス</div><div>';
+  sk.forEach(function(k){var o=k.v>=k.t;h+='<div class="ski"><div class="skl"><span class="nm">'+k.l+'</span><span class="vv" style="color:'+(o?"var(--gm)":"var(--pt)")+'">'+k.v+'%'+(o?" \u2713":" (基準"+k.t+"%)")+'</span></div><div class="skb"><div class="skf" style="width:'+k.v+'%;background:'+(o?"linear-gradient(90deg,var(--gm),#4FD080)":"linear-gradient(90deg,var(--pa),#FFB6C8)")+'"></div></div></div>'});
+  h+='</div><div class="ai"><div class="aih">🤖 AIアドバイス <span class="aib">AI</span></div>'+GA(s)+'</div>';
+  document.getElementById(tid).innerHTML=h;
+}
+
+function render(){
+  if(!A.length){
     ["v1","v2","v3","v4"].forEach(function(id){document.getElementById(id).textContent="--"});
     document.getElementById("top").innerHTML='<div class="nd">📭 まだデータがありません</div>';
     document.getElementById("nds").innerHTML='<div class="nd">📭 まだデータがありません</div>';
@@ -199,24 +330,26 @@ function init(){
     var pa=A.filter(function(s){return s.unitPrice>0}),ap=pa.length?Math.round(pa.reduce(function(a,s){return a+s.unitPrice},0)/pa.length):0;
     document.getElementById("v1").textContent=an+"%";document.getElementById("v2").textContent=ah+"%";
     document.getElementById("v3").textContent=ao+"%";document.getElementById("v4").textContent=F(ap);
-    var topEl=document.getElementById("top");topEl.innerHTML="";
-    A.slice().sort(function(a,b){return b.newRate-a.newRate}).slice(0,3).forEach(function(s,i){topEl.appendChild(mkRow(s,i,"t"))});
+    var te=document.getElementById("top");te.innerHTML="";
+    A.slice().sort(function(a,b){return b.newRate-a.newRate}).slice(0,3).forEach(function(s,i){te.appendChild(mkRow(s,i,"t"))});
     var nh=A.filter(function(s){return s.newRate<C.newRate&&s.newCount>=3}).sort(function(a,b){return a.newRate-b.newRate}).slice(0,3);
-    var ndsEl=document.getElementById("nds");
-    if(nh.length>0){ndsEl.innerHTML="";nh.forEach(function(s,i){ndsEl.appendChild(mkRow(s,i,"s"))})}
-    else ndsEl.innerHTML='<div style="text-align:center;padding:12px;color:var(--g5);font-size:13px">基準未達なし 🎉</div>';
+    var ne=document.getElementById("nds");
+    if(nh.length){ne.innerHTML="";nh.forEach(function(s,i){ne.appendChild(mkRow(s,i,"s"))})}
+    else ne.innerHTML='<div style="text-align:center;padding:14px;color:var(--g5);font-size:14px">基準未達なし 🎉</div>';
   }
   RR("rk1","newRate",function(s){return P(s.newRate)});RR("rk2","unitPrice",function(s){return F(s.unitPrice)});RR("rk3","herbSales",function(s){return F(s.herbSales)});
+
   var als=[];D.filter(function(s){return s.newCount>0}).forEach(function(s){
     var is=[];if(s.newRate>0&&s.newRate<C.newRate)is.push("新規契約率 "+s.newRate+"%(基準"+C.newRate+"%)");
     if(s.ondaCount>0&&s.ondaRate>0&&s.ondaRate<C.ondaRate)is.push("オンダリフト率 "+s.ondaRate+"%(基準"+C.ondaRate+"%)");
     if(s.herbNew>0&&s.herbRate>0&&s.herbRate<C.herbRate)is.push("ハーブ率 "+s.herbRate+"%(基準"+C.herbRate+"%)");
     if(s.newRate===0&&s.newCount>=3)is.push("新規契約率 0%");
     if(is.length>0)als.push({name:s.name,issues:is})});
-  var alEl=document.getElementById("al1");
-  if(als.length>0){alEl.innerHTML="";als.forEach(function(a){var d=document.createElement("div");d.className="sr ar";d.onclick=function(){OM(a.name)};d.innerHTML='<div class="rb2 ro" style="background:var(--ps);color:var(--pt)">\u26A0</div><div class="si"><div class="sn">'+a.name+'</div><div style="font-size:10px;color:var(--pt);margin-top:3px">'+a.issues.join(" / ")+'</div></div><div class="sa">\u203A</div>';alEl.appendChild(d)})}
-  else alEl.innerHTML='<div class="nd">\u2705 アラートなし</div>';
-  var sel=document.getElementById("sel");
+  var ae=document.getElementById("al1");
+  if(als.length){ae.innerHTML="";als.forEach(function(a){var d=document.createElement("div");d.className="sr ar";d.onclick=function(){OM(a.name)};d.innerHTML='<div class="rb2 ro" style="background:var(--ps);color:var(--pt)">\u26A0</div><div class="si"><div class="sn">'+a.name+'</div><div style="font-size:11px;color:var(--pt);margin-top:4px">'+a.issues.join(" / ")+'</div></div><div class="sa">\u203A</div>';ae.appendChild(d)})}
+  else ae.innerHTML='<div class="nd">\u2705 アラートなし</div>';
+
+  var sel=document.getElementById("sel");sel.innerHTML='<option value="">選択してください</option>';
   D.filter(function(s){return s.newCount>0}).sort(function(a,b){return a.name.localeCompare(b.name,"ja")}).forEach(function(s){var o=document.createElement("option");o.value=s.name;o.textContent=s.name;sel.appendChild(o)});
 }
 
@@ -224,7 +357,8 @@ function SI(){var n=document.getElementById("sel").value;if(!n){document.getElem
 function OM(n){var s=D.find(function(x){return x.name===n});if(!s)return;document.getElementById("mtt").textContent="\uD83D\uDCCB "+s.name;RD(s,"mbd");document.getElementById("mo").classList.add("ac");document.body.style.overflow="hidden"}
 function CD(){document.getElementById("mo").classList.remove("ac");document.body.style.overflow=""}
 function T(t,b){document.querySelectorAll(".tp").forEach(function(p){p.classList.remove("ac")});document.querySelectorAll(".tb").forEach(function(x){x.classList.remove("a")});document.getElementById("tp-"+t).classList.add("ac");b.classList.add("a")}
-init();
+
+loadData();
 </script>
 </body>
 </html>
