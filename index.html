@@ -136,6 +136,22 @@ body{
 .cs:focus{border-color:var(--gm)}
 .saa{position:absolute;right:16px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--gm);font-size:14px}
 
+/* Password modal */
+.pw-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:20px}
+.pw-ov.ac{display:flex}
+.pw-bx{background:var(--w);border-radius:20px;padding:28px 24px;width:100%;max-width:320px;text-align:center;box-shadow:var(--sl)}
+.pw-ic{font-size:40px;margin-bottom:12px}
+.pw-tt{font-family:'Zen Maru Gothic',sans-serif;font-size:17px;font-weight:700;color:var(--gd);margin-bottom:6px}
+.pw-st{font-size:13px;color:var(--g5);margin-bottom:20px}
+.pw-in{width:100%;padding:12px 16px;border-radius:var(--r);border:2px solid var(--gl);font-size:20px;font-family:'Noto Sans JP',sans-serif;font-weight:700;text-align:center;letter-spacing:6px;outline:none;color:var(--g9)}
+.pw-in:focus{border-color:var(--gm)}
+.pw-in.er{border-color:var(--pa);animation:shake .3s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.pw-er{font-size:12px;color:var(--pt);margin-top:8px;min-height:18px}
+.pw-row{display:flex;gap:10px;margin-top:16px}
+.pw-cn{flex:1;padding:11px;border-radius:var(--r);border:1px solid var(--g3);background:var(--g1);font-size:14px;font-family:'Noto Sans JP',sans-serif;cursor:pointer;color:var(--g7)}
+.pw-ok{flex:1;padding:11px;border-radius:var(--r);border:none;background:var(--gm);color:#fff;font-size:14px;font-family:'Noto Sans JP',sans-serif;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(46,173,109,.3)}
+
 .ar{border-left:4px solid var(--pa) !important}
 .nd{text-align:center;padding:28px;color:var(--g5);font-size:14px}
 .lu{text-align:center;padding:18px;font-size:11px;color:var(--g5)}
@@ -171,7 +187,7 @@ body{
     <button class="tb a" onclick="T('ov',this)">📊 全体</button>
     <button class="tb" onclick="T('rk',this)">🏆 ランキング</button>
     <button class="tb" onclick="T('id',this)">👤 個人分析</button>
-    <button class="tb" onclick="T('al',this)">🚨 アラート</button>
+    <button class="tb" id="tb-al" onclick="PA(this)">🚨 アラート</button>
   </div>
 
   <div class="ct">
@@ -203,6 +219,20 @@ body{
     </div>
   </div>
   <div class="lu" id="lu"></div>
+</div>
+
+<div class="pw-ov" id="pw-ov">
+  <div class="pw-bx">
+    <div class="pw-ic">🔒</div>
+    <div class="pw-tt">アラート閲覧</div>
+    <div class="pw-st">パスワードを入力してください</div>
+    <input class="pw-in" id="pw-in" type="password" maxlength="10" placeholder="****" onkeydown="if(event.key==='Enter')PW_ok()">
+    <div class="pw-er" id="pw-er"></div>
+    <div class="pw-row">
+      <button class="pw-cn" onclick="PW_cl()">キャンセル</button>
+      <button class="pw-ok" onclick="PW_ok()">確認</button>
+    </div>
+  </div>
 </div>
 
 <div class="mo" id="mo" onclick="if(event.target===this)CD()">
@@ -353,6 +383,10 @@ function render(){
   D.filter(function(s){return s.newCount>0}).sort(function(a,b){return a.name.localeCompare(b.name,"ja")}).forEach(function(s){var o=document.createElement("option");o.value=s.name;o.textContent=s.name;sel.appendChild(o)});
 }
 
+var _alTab=null;
+function PA(b){_alTab=b;document.getElementById("pw-in").value="";document.getElementById("pw-er").textContent="";document.getElementById("pw-in").classList.remove("er");document.getElementById("pw-ov").classList.add("ac");setTimeout(function(){document.getElementById("pw-in").focus()},100)}
+function PW_ok(){var v=document.getElementById("pw-in").value;if(v==="0201"){document.getElementById("pw-ov").classList.remove("ac");T("al",_alTab)}else{var inp=document.getElementById("pw-in");inp.classList.add("er");document.getElementById("pw-er").textContent="パスワードが違います";setTimeout(function(){inp.classList.remove("er")},400);inp.value=""}}
+function PW_cl(){document.getElementById("pw-ov").classList.remove("ac")}
 function SI(){var n=document.getElementById("sel").value;if(!n){document.getElementById("idc").innerHTML="";return}var s=D.find(function(x){return x.name===n});if(s)RD(s,"idc")}
 function OM(n){var s=D.find(function(x){return x.name===n});if(!s)return;document.getElementById("mtt").textContent="\uD83D\uDCCB "+s.name;RD(s,"mbd");document.getElementById("mo").classList.add("ac");document.body.style.overflow="hidden"}
 function CD(){document.getElementById("mo").classList.remove("ac");document.body.style.overflow=""}
