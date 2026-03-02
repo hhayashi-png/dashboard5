@@ -269,28 +269,16 @@ function loadData(){
   document.getElementById("errS").classList.remove("show");
   document.getElementById("app").style.display="none";
 
-  // Try JSONP first, then fetch
-  jsonp("_cb"+Date.now()).then(ok).catch(function(){
-    var ac=new AbortController(),tid=setTimeout(function(){ac.abort()},20000);
-    return fetch(GAS+"?json=1",{redirect:"follow",signal:ac.signal}).then(function(r){clearTimeout(tid);return r.json()}).then(ok);
-  }).catch(function(e){
-    document.getElementById("errM").textContent="データの取得に失敗しました";
-    document.getElementById("errD").textContent=e.message||"";
-    document.getElementById("errS").classList.add("show");
-    document.getElementById("lo").classList.add("hid");
-  });
-}
-
-function jsonp(cb){
-  return new Promise(function(res,rej){
-    var to=setTimeout(function(){cl();rej(new Error("timeout"))},20000);
-    function cl(){clearTimeout(to);delete window[cb];var e=document.getElementById("j_"+cb);if(e)e.remove()}
-    window[cb]=function(d){cl();res(d)};
-    var s=document.createElement("script");s.id="j_"+cb;
-    s.src=GAS+"?callback="+cb+"&t="+Date.now();
-    s.onerror=function(){cl();rej(new Error("script error"))};
-    document.body.appendChild(s);
-  });
+  var ac=new AbortController(),tid=setTimeout(function(){ac.abort()},15000);
+  fetch(GAS+"?json=1",{redirect:"follow",signal:ac.signal})
+    .then(function(r){clearTimeout(tid);return r.json()})
+    .then(ok)
+    .catch(function(e){
+      document.getElementById("errM").textContent="データの取得に失敗しました";
+      document.getElementById("errD").textContent=e.message||"";
+      document.getElementById("errS").classList.add("show");
+      document.getElementById("lo").classList.add("hid");
+    });
 }
 
 function ok(data){
