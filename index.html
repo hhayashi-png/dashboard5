@@ -221,18 +221,6 @@ body{
   <div class="lu" id="lu"></div>
 </div>
 
-<div class="pw-ov" id="login-ov" style="display:flex">
-  <div class="pw-bx">
-    <div class="pw-ic">🌿</div>
-    <div class="pw-tt">営業パフォーマンス ダッシュボード</div>
-    <div class="pw-st">パスワードを入力してください</div>
-    <input class="pw-in" id="login-in" type="password" maxlength="30" placeholder="••••••••" onkeydown="if(event.key==='Enter')login_ok()">
-    <div class="pw-er" id="login-er"></div>
-    <div class="pw-row" style="justify-content:center">
-      <button class="pw-ok" style="flex:none;min-width:120px" onclick="login_ok()">ログイン</button>
-    </div>
-  </div>
-</div>
 
 <div class="pw-ov" id="pw-ov">
   <div class="pw-bx">
@@ -394,27 +382,7 @@ function OM(n){var s=D.find(function(x){return x.name===n});if(!s)return;documen
 function CD(){document.getElementById("mo").classList.remove("ac");document.body.style.overflow=""}
 function T(t,b){document.querySelectorAll(".tp").forEach(function(p){p.classList.remove("ac")});document.querySelectorAll(".tb").forEach(function(x){x.classList.remove("a")});document.getElementById("tp-"+t).classList.add("ac");b.classList.add("a")}
 
-function login_ok(){
-  var v=document.getElementById("login-in").value;
-  if(v==="limebeautysalon"){
-    sessionStorage.setItem("dash5_auth","1");
-    document.getElementById("login-ov").style.display="none";
-    loadData();
-  } else {
-    var inp=document.getElementById("login-in");
-    inp.classList.add("er");
-    document.getElementById("login-er").textContent="パスワードが違います";
-    setTimeout(function(){inp.classList.remove("er")},400);
-    inp.value="";
-  }
-}
-
-if(sessionStorage.getItem("dash5_auth")==="1"){
-  document.getElementById("login-ov").style.display="none";
-  loadData();
-} else {
-  setTimeout(function(){document.getElementById("login-in").focus()},100);
-}
+loadData();
 </script>
 </body>
 </html>
