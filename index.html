@@ -271,7 +271,8 @@ function loadData(){
 
   // Try JSONP first, then fetch
   jsonp("_cb"+Date.now()).then(ok).catch(function(){
-    return fetch(GAS+"?json=1",{redirect:"follow"}).then(function(r){return r.json()}).then(ok);
+    var ac=new AbortController(),tid=setTimeout(function(){ac.abort()},20000);
+    return fetch(GAS+"?json=1",{redirect:"follow",signal:ac.signal}).then(function(r){clearTimeout(tid);return r.json()}).then(ok);
   }).catch(function(e){
     document.getElementById("errM").textContent="データの取得に失敗しました";
     document.getElementById("errD").textContent=e.message||"";
